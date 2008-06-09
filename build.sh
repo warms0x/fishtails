@@ -63,7 +63,7 @@ install_filesets() {
 
 # Create mfs directories and devices
 prepare_filesystem() {
-    mkdir -p $LOCAL_ROOT/.mdev $LOCAL_ROOT/.msbin $LOCAL_ROOT/.mbin
+    mkdir -p $LOCAL_ROOT/.mdev $LOCAL_ROOT/.msbin $LOCAL_ROOT/.mbin $LOCAL_ROOT/.musrlocal
     cp $LOCAL_ROOT/dev/MAKEDEV $LOCAL_ROOT/.mdev/
     cd $LOCAL_ROOT/dev && ./MAKEDEV all
     cd $LOCAL_ROOT/.mdev && ./MAKEDEV all
@@ -163,6 +163,19 @@ sub_mfsmount() {
         perl -p -i -e 's#^(PATH=)(.*)#\$1/.msbin:/.mbin:\$2#' /root/.profile
         perl -p -i -e 's#^(PATH=)(.*)#\$1/.msbin:/.mbin:\$2#' /home/live/.profile
     fi
+    if [ \$(sysctl -n hw.physmem) -gt 520000000 ]
+    then
+        echo "Lots of memory available, do you want to use it for /usr/local? (Y/n) "
+        read doit
+        if [ -z \$doit ] || [ \$doit = "y" ] || [ \$doit = "Y" ] || [ \$doit = "yes" ] || [ \$doit = "Yes" ]
+        then
+            # /usr/local uses ~360M
+            mount_mfs -s 780000 swap /.muserlocal
+            /bin/cp -rp /usr/local /.muserlocal
+            perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal:\$2#' /root/.profile
+            perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal:\$2#' /home/live/.profile
+        fi
+    fi
 }
 
 sub_timezone() {
@@ -228,7 +241,8 @@ sub_kblayout() {
 sub_networks() {
    echo -n "Do you want to auto configure the network? (Y/n) "
    read net
-   if [ -z \$net ] || [ \$net = "y" ] || [ \$net = "Y" ] || [ \$net = "yes" ] || [ \$net = "Yes" ]; then
+   if [ -z \$net ] || [ \$net = "y" ] || [ \$net = "Y" ] || [ \$net = "yes" ] || [ \$net = "Yes" ]
+   then
       echo 'Trying to configure the network using DHCP.'
       for nic in \$(ifconfig | awk -F: '/^[a-z]+[0-9]: flags=/ { print \$1 }' | egrep -v "lo|enc|pflog")
       do
