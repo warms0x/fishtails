@@ -163,14 +163,14 @@ sub_mfsmount() {
         perl -p -i -e 's#^(PATH=)(.*)#\$1/.msbin:/.mbin:\$2#' /root/.profile
         perl -p -i -e 's#^(PATH=)(.*)#\$1/.msbin:/.mbin:\$2#' /home/live/.profile
     fi
-    if [ \$(sysctl -n hw.physmem) -gt 520000000 ]
+    if [ \$(sysctl -n hw.physmem) -gt 800000000 ]
     then
         echo "Lots of memory available, do you want to use it for /usr/local? (Y/n) "
         read doit
         if [ -z \$doit ] || [ \$doit = "y" ] || [ \$doit = "Y" ] || [ \$doit = "yes" ] || [ \$doit = "Yes" ]
         then
-            # /usr/local uses ~360M
-            mount_mfs -s 780000 swap /.musrlocal
+            # /usr/local uses ~390M
+            mount_mfs -s 900000 swap /.musrlocal
             /bin/cp -rp /usr/local /.musrlocal
             perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal:\$2#' /root/.profile
             perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal:\$2#' /home/live/.profile
