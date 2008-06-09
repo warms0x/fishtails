@@ -170,8 +170,8 @@ sub_mfsmount() {
         if [ -z \$doit ] || [ \$doit = "y" ] || [ \$doit = "Y" ] || [ \$doit = "yes" ] || [ \$doit = "Yes" ]
         then
             # /usr/local uses ~360M
-            mount_mfs -s 780000 swap /.muserlocal
-            /bin/cp -rp /usr/local /.muserlocal
+            mount_mfs -s 780000 swap /.musrlocal
+            /bin/cp -rp /usr/local /.musrlocal
             perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal:\$2#' /root/.profile
             perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal:\$2#' /home/live/.profile
         fi
