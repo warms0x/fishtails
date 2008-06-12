@@ -243,12 +243,22 @@ sub_networks() {
    read net
    if [ -z \$net ] || [ \$net = "y" ] || [ \$net = "Y" ] || [ \$net = "yes" ] || [ \$net = "Yes" ]
    then
-      echo 'Trying to configure the network using DHCP.'
       for nic in \$(ifconfig | awk -F: '/^[a-z]+[0-9]: flags=/ { print \$1 }' | egrep -v "lo|enc|pflog")
       do
-          sudo ifconfig \$nic up && sudo dhclient \$nic
+          echo -n "Do you want to configure \$nic for dhcp? (Y/n) "
+          read if
+          if [ -z \$if ] || [ \$if = "y" ] || [ \$if = "Y" ] || [ \$if = "yes" ] || [ \$if = "Yes" ]
+          then
+              sudo ifconfig \$nic up && sudo dhclient \$nic &
+          fi
       done
-   sudo ntpd -s &
+
+      echo -n "Do you want to synchronize the time using ntpd? (Y/n) "
+      read ntp
+      if [ -z \$ntp ] || [ \$ntp = "y" ] || [ \$ntp = "Y" ] || [ \$ntp = "yes" ] || [ \$ntp = "Yes" ]
+      then
+          sudo ntpd -s &
+      fi
    fi
 }
 
