@@ -249,7 +249,7 @@ sub_networks() {
           read if
           if [ -z \$if ] || [ \$if = "y" ] || [ \$if = "Y" ] || [ \$if = "yes" ] || [ \$if = "Yes" ]
           then
-              sudo ifconfig \$nic up && sudo dhclient \$nic &
+              sudo ifconfig \$nic up && sudo dhclient -q \$nic &
           fi
       done
 
