@@ -63,20 +63,19 @@ install_filesets() {
 
 # Create mfs directories and devices
 prepare_filesystem() {
-    mkdir -p $LOCAL_ROOT/.mdev $LOCAL_ROOT/.msbin $LOCAL_ROOT/.mbin $LOCAL_ROOT/.musrlocal
-    cp $LOCAL_ROOT/dev/MAKEDEV $LOCAL_ROOT/.mdev/
-    cd $LOCAL_ROOT/dev && ./MAKEDEV all
-    cd $LOCAL_ROOT/.mdev && ./MAKEDEV all
+    mkdir -p $LOCAL_ROOT/.msbin $LOCAL_ROOT/.mbin $LOCAL_ROOT/.musrlocal
+    cd $LOCAL_ROOT/dev && ./MAKEDEV all && cd $LOCAL_ROOT
+    cp $LOCAL_ROOT/dev/MAKEDEV $LOCAL_ROOT/stand/
 }
 
 install_fstab() {
     cat >$LOCAL_ROOT/etc/fstab <<EOF
 swap /tmp mfs rw,auto 0 0
-swap /var mfs rw,auto,-P/.mvar,-s=48000 0 0
-swap /etc mfs rw,auto,-P/.metc 0 0
-swap /root mfs rw,auto,-P/.mroot 0 0
-swap /dev mfs rw,auto,-P/.mdev 0 0
-swap /home mfs rw,auto,-P/.mhome,-s=200000 0 0
+swap /var mfs rw,auto,-s=48000 0 0
+swap /etc mfs rw,auto 0 0
+swap /root mfs rw,auto 0 0
+swap /dev mfs rw,auto 0 0
+swap /home mfs rw,auto,-s=200000 0 0
 EOF
 }
 
@@ -107,8 +106,10 @@ pwd_mkdb /etc/master.passwd
 # Install packages
 pkg_add iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping clamav e-20071211p3 audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 sleuthkit smartmontools rsnapshot surfraw darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep
 
-# Add welcome screen output to /etc/rc
+# Adjust /etc/rc for our needs
 RC=/etc/rc
+perl -p -i -e 's@# XXX \(root now writeable\)@$&\necho -n "Creating device nodes ... "; cp /stand/MAKEDEV /dev; cd /dev && ./MAKEDEV all; echo done@' $RC
+perl -p -i -e 's@# XXX \(root now writeable\)@$&\n\nfor i in var etc root home; do echo -n "Populating \$i ... "; tar -C / -zxphf /stand/\$i.tgz; echo done; done@' $RC
 perl -p -i -e 's#^rm -f /fastboot##' $RC
 perl -p -i -e 's#^(exit 0)$#cat /etc/welcome\n$&#g' $RC
 
@@ -152,6 +153,7 @@ fi
 
 echo '.'
 
+
 sub_mfsmount() {
     if [ \$(sysctl -n hw.physmem) -gt 268000000 ]
     then
@@ -165,7 +167,7 @@ sub_mfsmount() {
     fi
     if [ \$(sysctl -n hw.physmem) -gt 800000000 ]
     then
-        echo "Lots of memory available, do you want to use it for /usr/local? (Y/n) "
+        echo -n "Lots of memory available, do you want to use it for /usr/local? (Y/n) "
         read doit
         if [ -z \$doit ] || [ \$doit = "y" ] || [ \$doit = "Y" ] || [ \$doit = "yes" ] || [ \$doit = "Yes" ]
         then
@@ -262,10 +264,10 @@ sub_networks() {
    fi
 }
 
-sub_mfsmount
 sub_kblayout
 sub_timezone
 sub_networks
+sub_mfsmount
 EOF
 
 # Write privoxy config
@@ -354,11 +356,17 @@ chown -R live /home/live
 # Leave the chroot environment
 exit
 
+# Prepare mfs filesystems by packing contents in tgz's
+for fs in var etc root home
+do
+    tar cphf - $fs | gzip -9 > $LOCAL_ROOT/stand/$fs.tgz
+done
+
 # Cleanup build environment
 rm $LOCAL_ROOT/etc/resolv.conf
 
 # Preload mfs mounts
-for i in etc root home var; do cp -rp $LOCAL_ROOT/$i $LOCAL_ROOT/.m$i; done
+for i in etc var; do cp -rp $LOCAL_ROOT/$i $LOCAL_ROOT/.m$i; done
 
 # To reedit the cd image, 'rm -rf var && cp -rp .mvar var'
 rm -r $LOCAL_ROOT/var/* && ln -s /var/tmp $LOCAL_ROOT/tmp
