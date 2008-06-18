@@ -174,8 +174,8 @@ sub_mfsmount() {
             # /usr/local uses ~390M
             mount_mfs -s 900000 swap /.musrlocal
             /bin/cp -rp /usr/local/* /.musrlocal
-            perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal:\$2#' /root/.profile
-            perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal:\$2#' /home/live/.profile
+            perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal/bin:/.musrlocal/sbin:\$2#' /root/.profile
+            perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal/bin:/.musrlocal/sbin:\$2#' /home/live/.profile
         fi
     fi
 }
