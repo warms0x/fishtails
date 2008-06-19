@@ -295,6 +295,7 @@ ftp -o /home/live/torbutton.xpi http://torbutton.torproject.org/dev/releases/tor
 cat >/home/live/.xinitrc <<EOF
 #!/bin/sh
 . /etc/X11/.xinitrc
+xset r on
 exec enlightenment_start
 EOF
 
