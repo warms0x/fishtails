@@ -116,14 +116,12 @@ perl -p -i -e 's#^(exit 0)$#cat /etc/welcome\n$&#g' $RC
 # Prepare welcome screen
 cat >/etc/welcome <<EOF
 
-Welcome at BSDanywhere $RELEASE, the OpenBSD Live system at your fingertips!
+Welcome to BSDanywhere $RELEASE - enlightenment at your fingertips!
 
-Two ways to log on to the system are provided: 'live' and 'root'
-
-Log in as 'live' with empty password for the graphical environment. Access
-to administrative commands are granted using the 'sudo' command. Experts may
-also log in as 'root' without password, which will neither start a graphical
-environment nor any custom BSDanywhere scripts.
+You may now log in using either 'live' or 'root' as a user name. Both
+accounts have no default password set. If you'd like to set one, use the
+'passwd' program after you logged on. For 'live', a graphical environment
+will be launched. You may use the 'sudo' command for priviliged commands.
 
 EOF
 
@@ -207,7 +205,7 @@ sub_timezone() {
 	    return
 	 fi
       else
-	 echo "Leaving timezone unconfigured"
+	 echo "Leaving timezone unconfigured."
 	 return
       fi
    done
