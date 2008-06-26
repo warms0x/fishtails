@@ -27,20 +27,29 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Variables
+export BASE=/home
+
 export RELEASE=4.3
 export ARCH=i386
 export R=$(echo $RELEASE | awk -F. '{print $1$2 }')
-export LOCAL_ROOT=/home/livecd
+
+export LOCAL_ROOT=$BASE/livecd
+export BUILD_ROOT=$BASE/build
+
 export MASTER_SITES=http://mirror.startek.ch
 export PKG_PATH=http://mirror.switch.ch/ftp/pub/OpenBSD/$RELEASE/packages/$ARCH/:$MASTER_SITES/OpenBSD/pkg/$ARCH/e17/
 
-mkdir $LOCAL_ROOT
+test -d $LOCAL_ROOT && rm -rf $LOCAL_ROOT
+mkdir -p $LOCAL_ROOT
+mkdir -p $BUILD_ROOT
 
 # Get custom kernels
 install_custom_kernels() {
     for i in bsd bsd.mp
     do
-        ftp -o $LOCAL_ROOT/$i $MASTER_SITES/BSDanywhere/$RELEASE/$ARCH/$i
+        test -r $BUILD_ROOT/$i || \
+             ftp -o $BUILD_ROOT/$i $MASTER_SITES/BSDanywhere/$RELEASE/$ARCH/$i
+        cp -p $BUILD_ROOT/$i $LOCAL_ROOT/
     done
 }
 
@@ -48,7 +57,9 @@ install_custom_kernels() {
 install_boot_files() {
     for i in cdbr cdboot bsd.rd
     do
-        ftp -o $LOCAL_ROOT/$i $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i
+        test -r $BUILD_ROOT/$i || \
+             ftp -o $BUILD_ROOT/$i $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i
+        cp -p $BUILD_ROOT/$i $LOCAL_ROOT/
     done
 }
 
@@ -56,8 +67,9 @@ install_boot_files() {
 install_filesets() {
     for i in base game man misc etc xbase xetc xfont xserv xshare
     do
-        ftp -o - $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i$R.tgz |\
-            tar -C $LOCAL_ROOT -xzphf -
+        test -r $BUILD_ROOT/$i$R.tgz || \
+             ftp -o $BUILD_ROOT/$i$R.tgz $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i$R.tgz
+        tar -C $LOCAL_ROOT -xzphf $BUILD_ROOT/$i$R.tgz
     done
 }
 
