@@ -196,6 +196,7 @@ then
    exit 1
 fi
 
+echo "This Script overwrites previous written old backup data!"
 echo -n "Which device is your usbdrive (without dev-directory, for example sd0 or sd1)? "
 read usb
 
@@ -370,33 +371,37 @@ sub_dorestore() {
 }
 
 sub_restore() {
-   echo -n "Do you want to restore data from an usbdrive (y/N)? "
-   read restore
-   if [ ! -z \$restore ]
+   usbdevs -d | grep umass >/dev/null
+   if [ \$? -eq 0 ]
    then
-      if [ \$restore = "y" ] || [ \$restore = "yes" ] || [ \$restore = "Y" ] || [ \$restore = "YES" ] || [ \$restore = "Yes" ]
+      echo -n "Do you want to restore data from an usbdrive (y/N)? "
+      read restore
+      if [ ! -z \$restore ]
       then
-	 echo -n "Which device is your usbdrive (without dev-directory, for example sd0 or sd1)? "
-	 read usb
-	 flag=0
-	 disklabel "\${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
-	 if [ \$? -eq 0 ]
+	 if [ \$restore = "y" ] || [ \$restore = "yes" ] || [ \$restore = "Y" ] || [ \$restore = "YES" ] || [ \$restore = "Yes" ]
 	 then
-	    mount_msdos /dev/"\${usb}"i /mnt
-	    sub_dorestore
-	    umount /mnt
-	    flag=1
-	 fi
-	 if [ \$flag -eq 0 ]
-	 then
-	    disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
+	    echo -n "Which device is your usbdrive (without dev-directory, for example sd0 or sd1)? "
+	    read usb
+	    flag=0
+	    disklabel "\${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
 	    if [ \$? -eq 0 ]
 	    then
-	       mount /dev/"\${usb}"a /mnt
+	       mount_msdos /dev/"\${usb}"i /mnt
 	       sub_dorestore
 	       umount /mnt
-	    else
-	       echo "Can't find correct partition on device, nothing restored!"
+	       flag=1
+	    fi
+	    if [ \$flag -eq 0 ]
+	    then
+	       disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
+	       if [ \$? -eq 0 ]
+	       then
+		  mount /dev/"\${usb}"a /mnt
+		  sub_dorestore
+		  umount /mnt
+	       else
+		  echo "Can't find correct partition on device, nothing restored!"
+	       fi
 	    fi
 	 fi
       fi
