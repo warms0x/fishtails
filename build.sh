@@ -27,7 +27,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Variables
-export BASE=/usr/ports
+export BASE=/home
 
 export RELEASE=4.3
 export ARCH=i386
