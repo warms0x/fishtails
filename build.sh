@@ -27,7 +27,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Variables
-export BASE=/home
+export BASE=/usr/ports
 
 export RELEASE=4.3
 export ARCH=i386
@@ -39,9 +39,13 @@ export BUILD_ROOT=$BASE/build
 export MASTER_SITES=http://mirror.startek.ch
 export PKG_PATH=http://mirror.switch.ch/ftp/pub/OpenBSD/$RELEASE/packages/$ARCH/:$MASTER_SITES/OpenBSD/pkg/$ARCH/e17/
 
-test -d $LOCAL_ROOT && rm -rf $LOCAL_ROOT
-mkdir -p $LOCAL_ROOT
-mkdir -p $BUILD_ROOT
+prepare_build() {
+    echo -n 'Preparing build environment ... '
+    test -d $LOCAL_ROOT && rm -rf $LOCAL_ROOT
+    mkdir -p $LOCAL_ROOT
+    mkdir -p $BUILD_ROOT
+    echo done
+}
 
 # Get custom kernels
 install_custom_kernels() {
@@ -69,15 +73,19 @@ install_filesets() {
     do
         test -r $BUILD_ROOT/$i$R.tgz || \
              ftp -o $BUILD_ROOT/$i$R.tgz $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i$R.tgz
+        echo -n "Installing $i ... "
         tar -C $LOCAL_ROOT -xzphf $BUILD_ROOT/$i$R.tgz
+        echo done
     done
 }
 
 # Create mfs directories and devices
 prepare_filesystem() {
+    echo -n 'Preparing file system layout ... '
     mkdir -p $LOCAL_ROOT/.msbin $LOCAL_ROOT/.mbin $LOCAL_ROOT/.musrlocal
     cd $LOCAL_ROOT/dev && ./MAKEDEV all && cd $LOCAL_ROOT
     cp $LOCAL_ROOT/dev/MAKEDEV $LOCAL_ROOT/stand/
+    echo done
 }
 
 install_fstab() {
@@ -91,6 +99,7 @@ swap /home mfs rw,auto,-s=200000 0 0
 EOF
 }
 
+prepare_build
 install_custom_kernels
 install_boot_files
 install_filesets
@@ -260,7 +269,7 @@ sub_mfsmount() {
         then
             # /usr/local uses ~390M
             mount_mfs -s 900000 swap /.musrlocal
-            /bin/cp -rp /usr/local/* /.musrlocal
+            /bin/cp -rp /usr/local/bin /usr/local/sbin /.musrlocal
             perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal/bin:/.musrlocal/sbin:\$2#' /root/.profile
             perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal/bin:/.musrlocal/sbin:\$2#' /home/live/.profile
         fi
@@ -491,14 +500,21 @@ exit
 # Prepare mfs filesystems by packing contents in tgz's
 for fs in var etc root home
 do
+    echo -n "Packaging $fs ... "
     tar cphf - $fs | gzip -9 > $LOCAL_ROOT/stand/$fs.tgz
+    echo done
 done
 
 # Cleanup build environment
 rm $LOCAL_ROOT/etc/resolv.conf
 
 # Preload mfs mounts
-for i in etc var; do cp -rp $LOCAL_ROOT/$i $LOCAL_ROOT/.m$i; done
+for i in etc var
+do
+    echo -n "Preloading $i ... "
+    cp -rp $LOCAL_ROOT/$i $LOCAL_ROOT/.m$i
+    echo done
+done
 
 # To reedit the cd image, 'rm -rf var && cp -rp .mvar var'
 rm -r $LOCAL_ROOT/var/* && ln -s /var/tmp $LOCAL_ROOT/tmp
