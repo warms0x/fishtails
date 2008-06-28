@@ -141,6 +141,83 @@ EOF
 head -2 /etc/motd > /tmp/motd
 mv /tmp/motd /etc/motd
 
+# Backupscript for a usbdrive
+cat >/usr/local/sbin/mkbackup <<EOF
+#!/bin/sh
+
+# Copyright (c) 2008 Rene Maroufi
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+# Backup for live-cd
+
+# function for backup
+sub_backup() {
+if [ -w /mnt ]
+then
+   cd /home/live
+   tar czf /mnt/BSDanywhere.tgz * .*
+else
+   echo "Can't write on /mnt!" >&2
+   exit 2
+fi
+}
+
+mount | grep mnt
+if [ \$? -eq 0 ]
+then
+   echo "Something is already mounted on /mnt!" >&2
+   echo "Please umount /mnt first and then try again!" >&2
+   exit 1
+fi
+
+echo -n "Which device is your usbdrive (without dev-directory, for example sd0 or sd1)? "
+read usb
+
+flag=0
+disklabel "\${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
+if [ \$? -eq 0 ]
+then
+   mount_msdos /dev/"\${usb}"i /mnt
+   sub_backup
+   umount /mnt
+   flag=1
+fi
+if [ \$flag -eq 0 ]
+then
+   disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
+   if [ \$? -eq 0 ]
+   then
+      mount /dev/"\${usb}"a /mnt
+      sub_backup
+      umount /mnt
+   else
+      echo "Can't find partition on device!" >&2
+      exit 3
+   fi
+fi
+
+EOF
+
+# make /usr/local/sbin/mkbackup executable
+chmod 555 /usr/local/sbin/mkbackup
+
 # Extend rc.local
 cat >/etc/rc.local <<EOF 
 # Site-specific startup actions, daemons, and other things which
@@ -274,10 +351,54 @@ sub_networks() {
    fi
 }
 
+sub_dorestore() {
+   if [ -r /mnt/BSDanywhere.tgz ]
+   then
+      tar xzpf /mnt/BSDanywhere.tgz -C /home/live
+   else
+      echo "Backup data not found, restored nothing!"
+   fi
+}
+
+sub_restore() {
+   echo -n "Do you want to restore data from an usbdrive (y/N)? "
+   read restore
+   if [ ! -z \$restore ]
+   then
+      if [ \$restore = "y" ] || [ \$restore = "yes" ] || [ \$restore = "Y" ] || [ \$restore = "YES" ] || [ \$restore = "Yes" ]
+      then
+	 echo -n "Which device is your usbdrive (without dev-directory, for example sd0 or sd1)? "
+	 read usb
+	 flag=0
+	 disklabel "\${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
+	 if [ \$? -eq 0 ]
+	 then
+	    mount_msdos /dev/"\${usb}"i /mnt
+	    sub_dorestore
+	    umount /mnt
+	    flag=1
+	 fi
+	 if [ \$flag -eq 0 ]
+	 then
+	    disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
+	    if [ \$? -eq 0 ]
+	    then
+	       mount /dev/"\${usb}"a /mnt
+	       sub_dorestore
+	       umount /mnt
+	    else
+	       echo "Can't find correct partition on device, nothing restored!"
+	    fi
+	 fi
+      fi
+   fi
+}
+
 sub_kblayout
 sub_timezone
 sub_networks
 sub_mfsmount
+sub_restore
 EOF
 
 # Write privoxy config
