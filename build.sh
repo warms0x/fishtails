@@ -82,7 +82,10 @@ install_filesets() {
 # Create mfs directories and devices
 prepare_filesystem() {
     echo -n 'Preparing file system layout ... '
-    mkdir -p $LOCAL_ROOT/.msbin $LOCAL_ROOT/.mbin $LOCAL_ROOT/.musrlocal
+    mkdir -p $LOCAL_ROOT/mfs/ \
+             $LOCAL_ROOT/mfs/usr/ \
+             $LOCAL_ROOT/mfs/usr/local/ \
+             $LOCAL_ROOT/mfs/usr/X11R6/
     cd $LOCAL_ROOT/dev && ./MAKEDEV all && cd $LOCAL_ROOT
     cp $LOCAL_ROOT/dev/MAKEDEV $LOCAL_ROOT/stand/
     echo done
@@ -116,6 +119,7 @@ echo "livecd.BSDanywhere.org" > /etc/myname
 perl -p -i -e 's/noname.my.domain noname/livecd.BSDanywhere.org livecd/g' /etc/hosts
 echo "boot /bsd.mp" > /etc/boot.conf
 echo "machdep.allowaperture=2" >> /etc/sysctl.conf
+echo "net.inet6.ip6.accept_rtadv=1" >> /etc/sysctl.conf
 touch /fastboot
 echo "%wheel        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
 
@@ -252,27 +256,22 @@ echo '.'
 
 
 sub_mfsmount() {
-    if [ \$(sysctl -n hw.physmem) -gt 268000000 ]
-    then
-        echo "Free memory available, using it for /bin and /sbin."
-        mount_mfs -s 24000 swap /.mbin
-        mount_mfs -s 48000 swap /.msbin
-        /bin/cp -rp /bin/* /.mbin/
-        /bin/cp -rp /sbin/* /.msbin/
-        perl -p -i -e 's#^(PATH=)(.*)#\$1/.msbin:/.mbin:\$2#' /root/.profile
-        perl -p -i -e 's#^(PATH=)(.*)#\$1/.msbin:/.mbin:\$2#' /home/live/.profile
-    fi
     if [ \$(sysctl -n hw.physmem) -gt 800000000 ]
     then
-        echo -n "Lots of memory available, do you want to use it for /usr/local? (Y/n) "
+        echo -n "Do you want to preload free memory to speed up BSDanywhere? (Y/n) "
         read doit
         if [ -z \$doit ] || [ \$doit = "y" ] || [ \$doit = "Y" ] || [ \$doit = "yes" ] || [ \$doit = "Yes" ]
         then
-            # /usr/local uses ~390M
-            mount_mfs -s 900000 swap /.musrlocal
-            /bin/cp -rp /usr/local/bin /usr/local/sbin /.musrlocal
-            perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal/bin:/.musrlocal/sbin:\$2#' /root/.profile
-            perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal/bin:/.musrlocal/sbin:\$2#' /home/live/.profile
+
+            mount_mfs -s 450000 swap /mfs
+
+            /bin/cp -rp /bin /sbin /mfs/
+            /bin/cp -rp /usr/bin /usr/sbin /mfs/usr/
+            /bin/cp -rp /usr/local/bin /usr/local/sbin /mfs/usr/local/
+            /bin/cp -rp /usr/X11R6/bin /mfs/usr/X11R6/
+
+            perl -pi -e 's#^(PATH=)(.*)#\$1/mfs/bin:/mfs/sbin:/mfs/usr/bin:/mfs/usr/sbin:/mfs/usr/local/bin:/mfs/usr/local/sbin:/mfs/usr/X11R6/bin:\$2#' /root/.profile
+            perl -pi -e 's#^(PATH=)(.*)#\$1/mfs/bin:/mfs/sbin:/mfs/usr/bin:/mfs/usr/sbin:/mfs/usr/local/bin:/mfs/usr/local/sbin:/mfs/usr/X11R6/bin:\$2#' /home/live/.profile
         fi
     fi
 }
@@ -348,7 +347,9 @@ sub_networks() {
           read if
           if [ -z \$if ] || [ \$if = "y" ] || [ \$if = "Y" ] || [ \$if = "yes" ] || [ \$if = "Yes" ]
           then
-              sudo ifconfig \$nic up && sudo dhclient -q \$nic &
+              sudo ifconfig \$nic up
+              sudo dhclient -q \$nic &
+              sudo rtsol \$nic &
           fi
       done
 
