@@ -82,10 +82,7 @@ install_filesets() {
 # Create mfs directories and devices
 prepare_filesystem() {
     echo -n 'Preparing file system layout ... '
-    mkdir -p $LOCAL_ROOT/mfs/ \
-             $LOCAL_ROOT/mfs/usr/ \
-             $LOCAL_ROOT/mfs/usr/local/ \
-             $LOCAL_ROOT/mfs/usr/X11R6/
+    mkdir -p $LOCAL_ROOT
     cd $LOCAL_ROOT/dev && ./MAKEDEV all && cd $LOCAL_ROOT
     cp $LOCAL_ROOT/dev/MAKEDEV $LOCAL_ROOT/stand/
     echo done
@@ -264,11 +261,16 @@ sub_mfsmount() {
         then
 
             mount_mfs -s 450000 swap /mfs
+            mkdir -p /mfs/usr/ \
+                     /mfs/usr/local/ \
+                     /mfs/usr/X11R6/
 
+            echo 'Populating /mfs ...'
             /bin/cp -rp /bin /sbin /mfs/
             /bin/cp -rp /usr/bin /usr/sbin /mfs/usr/
             /bin/cp -rp /usr/local/bin /usr/local/sbin /mfs/usr/local/
             /bin/cp -rp /usr/X11R6/bin /mfs/usr/X11R6/
+            echo done
 
             perl -pi -e 's#^(PATH=)(.*)#\$1/mfs/bin:/mfs/sbin:/mfs/usr/bin:/mfs/usr/sbin:/mfs/usr/local/bin:/mfs/usr/local/sbin:/mfs/usr/X11R6/bin:\$2#' /root/.profile
             perl -pi -e 's#^(PATH=)(.*)#\$1/mfs/bin:/mfs/sbin:/mfs/usr/bin:/mfs/usr/sbin:/mfs/usr/local/bin:/mfs/usr/local/sbin:/mfs/usr/X11R6/bin:\$2#' /home/live/.profile
