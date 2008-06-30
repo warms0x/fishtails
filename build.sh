@@ -54,7 +54,7 @@ prepare_build() {
     echo done
 }
 
-# Get custom kernels
+# Get custom kernels.
 install_custom_kernels() {
     for i in bsd bsd.mp
     do
@@ -64,7 +64,7 @@ install_custom_kernels() {
     done
 }
 
-# Get boot loaders and ram disk kernel
+# Get generic boot loaders and ram disk kernel.
 install_boot_files() {
     for i in cdbr cdboot bsd.rd
     do
@@ -74,7 +74,7 @@ install_boot_files() {
     done
 }
 
-# Get all file sets except comp$$.tgz
+# Get all OpenBSD file sets except compXX.tgz.
 install_filesets() {
     for i in base game man misc etc xbase xetc xfont xserv xshare
     do
@@ -86,10 +86,11 @@ install_filesets() {
     done
 }
 
-# Create mfs directories and devices
+# Create mfs mount point and device nodes. MAKEDEV is also saved to /stand so we'll 
+# have it available for execution within mfs during boot (/dev will be overmounted).
 prepare_filesystem() {
     echo -n 'Preparing file system layout ... '
-    mkdir -p $LOCAL_ROOT/mfs
+    mkdir $LOCAL_ROOT/mfs
     cd $LOCAL_ROOT/dev && ./MAKEDEV all && cd $LOCAL_ROOT
     cp $LOCAL_ROOT/dev/MAKEDEV $LOCAL_ROOT/stand/
     echo done
@@ -113,10 +114,10 @@ install_filesets
 prepare_filesystem
 install_fstab
 
-# Help chroot to resolve
+# Help chroot to find a name server.
 cp /etc/resolv.conf $LOCAL_ROOT/etc/
 
-# Customize system within chroot
+# Customize system from within chroot.
 chroot $LOCAL_ROOT
 ldconfig
 echo "livecd.BSDanywhere.org" > /etc/myname
@@ -127,22 +128,23 @@ echo "net.inet6.ip6.accept_rtadv=1" >> /etc/sysctl.conf
 touch /fastboot
 echo "%wheel        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
 
-# Create live account without password
+# Create 'live' account with an empty password.
 useradd -G wheel,operator,dialer -c "BSDanywhere Live CD Account" -d /home/live -k /etc/skel -s /bin/ksh -m live
 perl -p -i -e 's/\Qlive:*************:1000\E/live::1000/g' /etc/master.passwd
 pwd_mkdb /etc/master.passwd
 
-# Install packages
+# Download and install packages.
 pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping clamav e-20071211p3 audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 sleuthkit smartmontools rsnapshot surfraw darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep
 
-# Adjust /etc/rc for our needs
+# To create /dev nodes and to untar all pre-packaged file systems
+# into memory, we need to hook into /etc/rc early enough.
 RC=/etc/rc
 perl -p -i -e 's@# XXX \(root now writeable\)@$&\necho -n "Creating device nodes ... "; cp /stand/MAKEDEV /dev; cd /dev && ./MAKEDEV all; echo done@' $RC
 perl -p -i -e 's@# XXX \(root now writeable\)@$&\n\necho -n "Populating file systems:"; for i in var etc root home; do echo -n " \$i"; tar -C / -zxphf /stand/\$i.tgz; done; echo .@' $RC
 perl -p -i -e 's#^rm -f /fastboot##' $RC
 perl -p -i -e 's#^(exit 0)$#cat /etc/welcome\n$&#g' $RC
 
-# Prepare welcome screen
+# Create welcome screen.
 cat >/etc/welcome <<EOF
 
 Welcome to BSDanywhere $RELEASE - enlightenment at your fingertips!
@@ -154,12 +156,13 @@ will be launched. You may use the 'sudo' command for priviliged commands.
 
 EOF
 
-# Trim motd
+# Trim motd.
 head -2 /etc/motd > /tmp/motd
 mv /tmp/motd /etc/motd
 
-# Backupscript for a usbdrive
-cat >/usr/local/sbin/mkbackup <<EOF
+# Backup script for an USB drive
+MKBACKUP=/usr/local/sbin/mkbackup
+cat >$MKBACKUP <<EOF
 #!/bin/sh
 
 # Copyright (c) 2008 Rene Maroufi
@@ -182,7 +185,7 @@ cat >/usr/local/sbin/mkbackup <<EOF
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# Backup for live-cd
+# This script will backup or restore live's home data on a USB stick.
 
 # function for backup
 sub_backup() {
@@ -204,8 +207,8 @@ then
    exit 1
 fi
 
-echo "This Script overwrites previous written old backup data!"
-echo -n "Which device is your usbdrive (without dev-directory, for example sd0 or sd1)? "
+echo "This script overwrites previously written (old) backup data!"
+echo -n "Which device is your USB drive (without '/dev/', e.g. 'sd0')? "
 read usb
 
 flag=0
@@ -233,10 +236,10 @@ fi
 
 EOF
 
-# make /usr/local/sbin/mkbackup executable
-chmod 555 /usr/local/sbin/mkbackup
+# Make mkbackup executable.
+chmod 555 $MKBACKUP
 
-# Extend rc.local
+# Create our own /etc/rc.local.
 cat >/etc/rc.local <<EOF 
 # Site-specific startup actions, daemons, and other things which
 # can be done AFTER your system goes into securemode.  For actions
@@ -258,7 +261,8 @@ fi
 
 echo '.'
 
-
+# BSDanywhere should always boot on low memory systems. However, if
+# we find enough memory, we can offer some performance improvements.
 sub_mfsmount() {
     if [ \$(sysctl -n hw.physmem) -gt 530000000 ]
     then
@@ -284,6 +288,7 @@ sub_mfsmount() {
     fi
 }
 
+# Ask for setting the time zone.
 sub_timezone() {
    while :
    do
@@ -317,6 +322,7 @@ sub_timezone() {
    done
 }
 
+# Ask for setting the keyboard layout and pre-set the X11 layout, too.
 sub_kblayout() {
     echo "Select keyboard layout *by number*:"
     select kbd in us de sg es it fr be jp nl ru uk sv no pt br hu tr dk
@@ -344,6 +350,8 @@ sub_kblayout() {
     done
 }
 
+# Find all real network interfaces and offer to run dhclient/rtsol on
+# each. Also offer to synchronize the time using a default ntpd.conf.
 sub_networks() {
    echo -n "Do you want to auto configure the network? (Y/n) "
    read net
@@ -409,7 +417,7 @@ sub_restore() {
 		  sub_dorestore
 		  umount /mnt
 	       else
-		  echo "Can't find correct partition on device, nothing restored!"
+		  echo "Can't find correct partition on device: nothing restored!"
 	       fi
 	    fi
 	 fi
@@ -417,6 +425,8 @@ sub_restore() {
    fi
 }
 
+# Always ask for the keyboard layout first, otherwise subsequent
+# questions may have to be answered on an unset keyboard.
 sub_kblayout
 sub_timezone
 sub_networks
@@ -424,7 +434,7 @@ sub_mfsmount
 sub_restore
 EOF
 
-# Write privoxy config
+# Write privoxy config to provide anonymous http ("surfing").
 cat >/etc/privoxy/config <<EOF
 forward-socks4a / 127.0.0.1:9050 .
 confdir /etc/privoxy
@@ -445,7 +455,7 @@ EOF
 # Users can drag this file into firefox to install it. Automatic install seems to be broken.
 ftp -o /home/live/torbutton.xpi http://torbutton.torproject.org/dev/releases/torbutton-1.2.0rc1.xpi
 
-# Customize 'live' account
+# Customize 'live' account.
 cat >/home/live/.xinitrc <<EOF
 #!/bin/sh
 . /etc/X11/.xinitrc
@@ -457,7 +467,7 @@ EOF
 echo "startx" >> /home/live/.profile
 
 
-# Create E17 menus
+# Create E17 menus.
 E17_BASE=/home/live/.e/e
 E17_MENU=$E17_BASE/applications/menu
 E17_BAR=$E17_BASE/applications/bar/default
@@ -466,7 +476,7 @@ mkdir -p $E17_MENU
 mkdir -p $E17_BAR
 mkdir -p $E17_BG
 
-# Populate e17 menu entries
+# Populate e17 menu entries.
 cat >$E17_MENU/favorite.menu <<EOF
 <?xml version="1.0"?>
 <!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN" "http://standards.freedesktop.org/menu-spec/menu-1.0.dtd">
@@ -485,7 +495,7 @@ cat >$E17_MENU/favorite.menu <<EOF
 </Menu>
 EOF
 
-# Populate e17 bar entries (the bottom panel)
+# Populate e17 bar entries (the bottom panel).
 cat >$E17_BAR/.order <<EOF
 xterm.desktop
 firefox.desktop
@@ -494,7 +504,7 @@ gimp.desktop
 abiword.desktop
 EOF
 
-# Create missing xterm.desktop file
+# Create missing xterm.desktop file.
 cat >/usr/local/share/applications/xterm.desktop <<EOF
 [Desktop Entry]
 Comment=Terminal for X11
@@ -505,13 +515,14 @@ Icon=xterm.png
 Terminal=false
 EOF
 
-# Ensure ownership of all previously created inodes
+# Ensure ownership of all previously created inodes.
 chown -R live /home/live
 
-# Leave the chroot environment
+# Leave the chroot environment.
 exit
 
-# Prepare mfs filesystems by packing contents in tgz's
+# Prepare to-be-mfs file systems by packaging their directories into
+# individual tgz's. They will be untar'ed on each boot by /etc/rc.
 for fs in var etc root home
 do
     echo -n "Packaging $fs ... "
@@ -519,21 +530,13 @@ do
     echo done
 done
 
-# Cleanup build environment
+# Cleanup build environment.
 rm $LOCAL_ROOT/etc/resolv.conf
 
-# Preload mfs mounts
-for i in etc var
-do
-    echo -n "Preloading $i ... "
-    cp -rp $LOCAL_ROOT/$i $LOCAL_ROOT/.m$i
-    echo done
-done
-
-# To reedit the cd image, 'rm -rf var && cp -rp .mvar var'
+# To save space on CD, we clean out what is not needed to boot.
 rm -r $LOCAL_ROOT/var/* && ln -s /var/tmp $LOCAL_ROOT/tmp
 rm $LOCAL_ROOT/etc/fbtab
 
-# Create CD image
+# Finally, create the CD image.
 cd $LOCAL_ROOT/..
 mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R.iso -b cdbr -c boot.catalog livecd
