@@ -532,6 +532,7 @@ done
 
 # To reedit the cd image, 'rm -rf var && cp -rp .mvar var'
 rm -r $LOCAL_ROOT/var/* && ln -s /var/tmp $LOCAL_ROOT/tmp
+rm $LOCAL_ROOT/etc/fbtab
 
 # Create CD image
 cd $LOCAL_ROOT/..
