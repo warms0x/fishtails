@@ -82,7 +82,7 @@ install_filesets() {
 # Create mfs directories and devices
 prepare_filesystem() {
     echo -n 'Preparing file system layout ... '
-    mkdir -p $LOCAL_ROOT
+    mkdir -p $LOCAL_ROOT/mfs
     cd $LOCAL_ROOT/dev && ./MAKEDEV all && cd $LOCAL_ROOT
     cp $LOCAL_ROOT/dev/MAKEDEV $LOCAL_ROOT/stand/
     echo done
@@ -253,17 +253,15 @@ echo '.'
 
 
 sub_mfsmount() {
-    if [ \$(sysctl -n hw.physmem) -gt 800000000 ]
+    if [ \$(sysctl -n hw.physmem) -gt 530000000 ]
     then
         echo -n "Do you want to preload free memory to speed up BSDanywhere? (Y/n) "
         read doit
         if [ -z \$doit ] || [ \$doit = "y" ] || [ \$doit = "Y" ] || [ \$doit = "yes" ] || [ \$doit = "Yes" ]
         then
 
-            mount_mfs -s 450000 swap /mfs
-            mkdir -p /mfs/usr/ \
-                     /mfs/usr/local/ \
-                     /mfs/usr/X11R6/
+            mount_mfs -s 300000 swap /mfs
+            mkdir -p /mfs/usr/local/ /mfs/usr/X11R6/
 
             echo 'Populating /mfs ...'
             /bin/cp -rp /bin /sbin /mfs/
