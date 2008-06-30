@@ -26,6 +26,13 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
+# USAGE INFORMATION
+# Call this script with 'cat build.sh | ksh'. Do NOT invoke build.sh
+# directly as this will overwrite your entire / file system! Also
+# ensure $BASE resides on file system mounted without restrictions.
+
+
 # Variables
 export BASE=/home
 
@@ -131,7 +138,7 @@ pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping m
 # Adjust /etc/rc for our needs
 RC=/etc/rc
 perl -p -i -e 's@# XXX \(root now writeable\)@$&\necho -n "Creating device nodes ... "; cp /stand/MAKEDEV /dev; cd /dev && ./MAKEDEV all; echo done@' $RC
-perl -p -i -e 's@# XXX \(root now writeable\)@$&\n\nfor i in var etc root home; do echo -n "Populating \$i ... "; tar -C / -zxphf /stand/\$i.tgz; echo done; done@' $RC
+perl -p -i -e 's@# XXX \(root now writeable\)@$&\n\necho -n "Populating file systems:"; for i in var etc root home; do echo -n " \$i"; tar -C / -zxphf /stand/\$i.tgz; done; echo .@' $RC
 perl -p -i -e 's#^rm -f /fastboot##' $RC
 perl -p -i -e 's#^(exit 0)$#cat /etc/welcome\n$&#g' $RC
 
@@ -261,17 +268,18 @@ sub_mfsmount() {
         then
 
             mount_mfs -s 300000 swap /mfs
-            mkdir -p /mfs/usr/local/ /mfs/usr/X11R6/
+            mkdir -p /mfs/usr/local/
 
-            echo 'Populating /mfs ...'
-            /bin/cp -rp /bin /sbin /mfs/
-            /bin/cp -rp /usr/bin /usr/sbin /mfs/usr/
-            /bin/cp -rp /usr/local/bin /usr/local/sbin /mfs/usr/local/
-            /bin/cp -rp /usr/X11R6/bin /mfs/usr/X11R6/
-            echo done
+            echo -n 'Memory preload:'
+            for i in bin sbin; do
+                echo -n " /\$i";            /bin/cp -rp /\$i /mfs/
+                echo -n " /usr/\$i";        /bin/cp -rp /usr/\$i /mfs/usr/
+                echo -n " /usr/local/\$i";  /bin/cp -rp /usr/local/\$i /mfs/usr/local/
+            done
+            echo .
 
-            perl -pi -e 's#^(PATH=)(.*)#\$1/mfs/bin:/mfs/sbin:/mfs/usr/bin:/mfs/usr/sbin:/mfs/usr/local/bin:/mfs/usr/local/sbin:/mfs/usr/X11R6/bin:\$2#' /root/.profile
-            perl -pi -e 's#^(PATH=)(.*)#\$1/mfs/bin:/mfs/sbin:/mfs/usr/bin:/mfs/usr/sbin:/mfs/usr/local/bin:/mfs/usr/local/sbin:/mfs/usr/X11R6/bin:\$2#' /home/live/.profile
+            perl -pi -e 's#^(PATH=)(.*)#\$1/mfs/bin:/mfs/sbin:/mfs/usr/bin:/mfs/usr/sbin:/mfs/usr/local/bin:/mfs/usr/local/sbin:\$2#' /root/.profile
+            perl -pi -e 's#^(PATH=)(.*)#\$1/mfs/bin:/mfs/sbin:/mfs/usr/bin:/mfs/usr/sbin:/mfs/usr/local/bin:/mfs/usr/local/sbin:\$2#' /home/live/.profile
         fi
     fi
 }
