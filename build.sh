@@ -535,6 +535,7 @@ rm $LOCAL_ROOT/etc/resolv.conf
 
 # To save space on CD, we clean out what is not needed to boot.
 rm -r $LOCAL_ROOT/var/* && ln -s /var/tmp $LOCAL_ROOT/tmp
+rm -r $LOCAL_ROOT/home
 rm $LOCAL_ROOT/etc/fbtab
 
 # Finally, create the CD image.
