@@ -161,7 +161,8 @@ head -2 /etc/motd > /tmp/motd
 mv /tmp/motd /etc/motd
 
 # Backup script for an USB drive
-MKBACKUP=/usr/local/sbin/mkbackup
+mkdir /home/live/bin
+MKBACKUP=/home/live/bin/mkbackup
 cat >$MKBACKUP <<EOF
 #!/bin/sh
 
@@ -189,14 +190,14 @@ cat >$MKBACKUP <<EOF
 
 # function for backup
 sub_backup() {
-if [ -w /mnt ]
-then
-   cd /home/live
-   tar czf /mnt/BSDanywhere.tgz * .*
-else
-   echo "Can't write on /mnt!" >&2
-   exit 2
-fi
+    if [ -w /mnt ]
+    then
+       cd /home/live
+       tar czf /mnt/BSDanywhere.tgz * .*
+    else
+       echo "Can't write on /mnt!" >&2
+       exit 2
+    fi
 }
 
 mount | grep mnt
@@ -233,7 +234,6 @@ then
       exit 3
    fi
 fi
-
 EOF
 
 # Make mkbackup executable.
@@ -309,7 +309,7 @@ sub_timezone() {
 	 fi
 	 if [ -f "/usr/share/zoneinfo/\${zone}" ]
 	 then
-	    echo "Setting local timezone to \${zone} ..."
+	    echo -n "Setting local timezone to \${zone} ... "
 	    rm /etc/localtime
 	    ln -sf "/usr/share/zoneinfo/\${zone}" /etc/localtime
 	    echo "done"
@@ -378,60 +378,12 @@ sub_networks() {
    fi
 }
 
-sub_dorestore() {
-   if [ -r /mnt/BSDanywhere.tgz ]
-   then
-      tar xzpf /mnt/BSDanywhere.tgz -C /home/live
-   else
-      echo "Backup data not found, restored nothing!"
-   fi
-}
-
-sub_restore() {
-   usbdevs -d | grep umass >/dev/null
-   if [ \$? -eq 0 ]
-   then
-      echo -n "Do you want to restore data from an usbdrive (y/N)? "
-      read restore
-      if [ ! -z \$restore ]
-      then
-	 if [ \$restore = "y" ] || [ \$restore = "yes" ] || [ \$restore = "Y" ] || [ \$restore = "YES" ] || [ \$restore = "Yes" ]
-	 then
-	    echo -n "Which device is your usbdrive (without dev-directory, for example sd0 or sd1)? "
-	    read usb
-	    flag=0
-	    disklabel "\${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
-	    if [ \$? -eq 0 ]
-	    then
-	       mount_msdos /dev/"\${usb}"i /mnt
-	       sub_dorestore
-	       umount /mnt
-	       flag=1
-	    fi
-	    if [ \$flag -eq 0 ]
-	    then
-	       disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
-	       if [ \$? -eq 0 ]
-	       then
-		  mount /dev/"\${usb}"a /mnt
-		  sub_dorestore
-		  umount /mnt
-	       else
-		  echo "Can't find correct partition on device: nothing restored!"
-	       fi
-	    fi
-	 fi
-      fi
-   fi
-}
-
 # Always ask for the keyboard layout first, otherwise subsequent
 # questions may have to be answered on an unset keyboard.
 sub_kblayout
 sub_timezone
 sub_networks
 sub_mfsmount
-sub_restore
 EOF
 
 # Write privoxy config to provide anonymous http ("surfing").
@@ -463,9 +415,61 @@ xset r on
 exec enlightenment_start
 EOF
 
+# Ask for invokation of restore script on login of 'live'.
+cat >>/home/live/.profile <<EOF
+
+sub_dorestore() {
+   if [ -r /mnt/BSDanywhere.tgz ]
+   then
+      tar xzpf /mnt/BSDanywhere.tgz -C /home/live
+   else
+      echo "Backup data not found, restored nothing!"
+   fi
+}
+
+liverestore() {
+   usbdevs -d | grep umass >/dev/null
+   if [ \$? -eq 0 ]
+   then
+      echo -n "Do you want to restore data from an usbdrive (y/N)? "
+      read restore
+      if [ ! -z \$restore ]
+      then
+         if [ \$restore = "y" ] || [ \$restore = "yes" ] || [ \$restore = "Y" ] || [ \$restore = "YES" ] || [ \$restore = "Yes" ]
+         then
+            echo -n "Which device is your USB drive (without '/dev/', e.g. 'sd0')? "
+            read usb
+            flag=0
+            disklabel "\${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
+            if [ \$? -eq 0 ]
+            then
+               mount_msdos /dev/"\${usb}"i /mnt
+               sub_dorestore
+               umount /mnt
+               flag=1
+            fi
+            if [ \$flag -eq 0 ]
+            then
+               disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
+               if [ \$? -eq 0 ]
+               then
+                  mount /dev/"\${usb}"a /mnt
+                  sub_dorestore
+                  umount /mnt
+               else
+                  echo "Can't find correct partition on device: nothing restored!"
+               fi
+            fi
+         fi
+      fi
+   fi
+}
+
+liverestore
+EOF
+
 # Start X11 for 'live' by default
 echo "startx" >> /home/live/.profile
-
 
 # Create E17 menus.
 E17_BASE=/home/live/.e/e
@@ -535,7 +539,7 @@ rm $LOCAL_ROOT/etc/resolv.conf
 
 # To save space on CD, we clean out what is not needed to boot.
 rm -r $LOCAL_ROOT/var/* && ln -s /var/tmp $LOCAL_ROOT/tmp
-rm -r $LOCAL_ROOT/home
+rm -r $LOCAL_ROOT/home/*
 rm $LOCAL_ROOT/etc/fbtab
 
 # Finally, create the CD image.
