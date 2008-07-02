@@ -248,16 +248,16 @@ cat >/etc/rc.local <<EOF
 
 echo -n 'starting local daemons:'
 
-if [ -x /usr/local/bin/tor ]; then
-     echo -n ' tor';
-     /usr/local/bin/tor >/dev/null 2>&1
-fi
+#if [ -x /usr/local/bin/tor ]; then
+#     echo -n ' tor';
+#     /usr/local/bin/tor >/dev/null 2>&1
+#fi
 
-if [ -x /usr/local/sbin/privoxy ]; then
-     echo -n ' privoxy';
-     /usr/local/sbin/privoxy --user _privoxy._privoxy \
-	/etc/privoxy/config >/dev/null 2>&1
-fi
+#if [ -x /usr/local/sbin/privoxy ]; then
+#     echo -n ' privoxy';
+#     /usr/local/sbin/privoxy --user _privoxy._privoxy \
+#	/etc/privoxy/config >/dev/null 2>&1
+#fi
 
 echo '.'
 
