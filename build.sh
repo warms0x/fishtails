@@ -415,22 +415,25 @@ xset r on
 exec enlightenment_start
 EOF
 
-# For 'live', we do some customization in .profile
-cat >>/home/live/.profile <<EOF
-
-export PS1='\u@\h:\w$ '
+# For 'live', we define a .kshrc which will be executed in .profile
+cat >/home/live/.kshrc <<EOF
+alias l='ls -alF'
 alias ll='ls -l'
 alias la='ls -la'
 alias ..='cd ..'
-alias ...='cd ..; cd ..'
+alias ...='cd ..;cd..'
 
-# make delete not spit out spurous '~' characters
 bind '^[[3'=prefix-2
-# make the delete key work
 bind '^[[3~'=delete-char-forward
-# home/end
 bind '^[OH'=beginning-of-line
 bind '^[OF'=end-of-line
+EOF
+
+# For 'live', we do some customization in .profile
+cat >>/home/live/.profile <<EOF
+
+export ENV=\$HOME/.kshrc
+export PS1='\u@\h:\w$ '
 
 # Ask for invokation of restore script on login of 'live'.
 sub_dorestore() {
@@ -559,4 +562,4 @@ rm $LOCAL_ROOT/etc/fbtab
 
 # Finally, create the CD image.
 cd $LOCAL_ROOT/..
-mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R.iso -b cdbr -c boot.catalog livecd
+mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R-$ARCH.iso -b cdbr -c boot.catalog livecd
