@@ -221,7 +221,7 @@ then
    umount /mnt
    flag=1
 fi
-if [ \$flag -eq 0 ]
+if [ "\$flag" -eq 0 ]
 then
    disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
    if [ \$? -eq 0 ]
@@ -327,18 +327,18 @@ sub_kblayout() {
     echo "Select keyboard layout *by number*:"
     select kbd in us de sg es it fr be jp nl ru uk sv no pt br hu tr dk
     do
-       if [ -n \$kbd ]; then
+       if [ -n "\$kbd" ]; then
 
           # set console mapping
-          /sbin/kbd \$kbd
+          /sbin/kbd "\$kbd"
 
           # write X11 mapping into site wide config
-	  if [ \$kbd = 'sg' ]; then
+	  if [ "\$kbd" = 'sg' ]; then
              xkbd=ch
-	  elif [ \$kbd = 'sv' ]; then
+	  elif [ "\$kbd" = 'sv' ]; then
              xkbd=se
           else
-             xkbd=\$kbd
+             xkbd="\$kbd"
           fi
 
           echo "/usr/X11R6/bin/setxkbmap \$xkbd &" > /etc/X11/.xinitrc
@@ -355,23 +355,23 @@ sub_kblayout() {
 sub_networks() {
    echo -n "Do you want to auto configure the network? (Y/n) "
    read net
-   if [ -z \$net ] || [ \$net = "y" ] || [ \$net = "Y" ] || [ \$net = "yes" ] || [ \$net = "Yes" ]
+   if [ -z "\$net" ] || [ "\$net" = "y" ] || [ "\$net" = "Y" ] || [ "\$net" = "yes" ] || [ "\$net" = "Yes" ]
    then
       for nic in \$(ifconfig | awk -F: '/^[a-z]+[0-9]: flags=/ { print \$1 }' | egrep -v "lo|enc|pflog")
       do
           echo -n "Do you want to configure \$nic for dhcp? (Y/n) "
           read if
-          if [ -z \$if ] || [ \$if = "y" ] || [ \$if = "Y" ] || [ \$if = "yes" ] || [ \$if = "Yes" ]
+          if [ -z "\$if" ] || [ "\$if" = "y" ] || [ "\$if" = "Y" ] || [ "\$if" = "yes" ] || [ "\$if" = "Yes" ]
           then
-              sudo ifconfig \$nic up
-              sudo dhclient -q \$nic &
-              sudo rtsol \$nic &
+              sudo ifconfig "\$nic" up
+              sudo dhclient -q "\$nic" &
+              sudo rtsol "\$nic" &
           fi
       done
 
       echo -n "Do you want to synchronize the time using ntpd? (Y/n) "
       read ntp
-      if [ -z \$ntp ] || [ \$ntp = "y" ] || [ \$ntp = "Y" ] || [ \$ntp = "yes" ] || [ \$ntp = "Yes" ]
+      if [ -z "\$ntp" ] || [ "\$ntp" = "y" ] || [ "\$ntp" = "Y" ] || [ "\$ntp" = "yes" ] || [ "\$ntp" = "Yes" ]
       then
           sudo ntpd -s &
       fi
@@ -453,7 +453,7 @@ liverestore() {
       read restore
       if [ ! -z \$restore ]
       then
-         if [ \$restore = "y" ] || [ \$restore = "yes" ] || [ \$restore = "Y" ] || [ \$restore = "YES" ] || [ \$restore = "Yes" ]
+         if [ "\$restore" = "y" ] || [ "\$restore" = "yes" ] || [ "\$restore" = "Y" ] || [ "\$restore" = "YES" ] || [ "\$restore" = "Yes" ]
          then
             echo -n "Which device is your USB drive (without '/dev/', e.g. 'sd0')? "
             read usb
