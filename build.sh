@@ -268,7 +268,7 @@ sub_mfsmount() {
     then
         echo -n "Do you want to preload free memory to speed up BSDanywhere? (N/y) "
         read doit
-        if [ \$doit = "y" ] || [ \$doit = "Y" ] || [ \$doit = "yes" ] || [ \$doit = "Yes" ]
+        if [ "\$doit" == "y" ] || [ "\$doit" == "Y" ] || [ "\$doit" == "yes" ] || [ "\$doit" == "Yes" ]
         then
 
             mount_mfs -s 300000 swap /mfs
