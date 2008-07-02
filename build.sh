@@ -266,9 +266,9 @@ echo '.'
 sub_mfsmount() {
     if [ \$(sysctl -n hw.physmem) -gt 530000000 ]
     then
-        echo -n "Do you want to preload free memory to speed up BSDanywhere? (Y/n) "
+        echo -n "Do you want to preload free memory to speed up BSDanywhere? (N/y) "
         read doit
-        if [ -z \$doit ] || [ \$doit = "y" ] || [ \$doit = "Y" ] || [ \$doit = "yes" ] || [ \$doit = "Yes" ]
+        if [ \$doit = "y" ] || [ \$doit = "Y" ] || [ \$doit = "yes" ] || [ \$doit = "Yes" ]
         then
 
             mount_mfs -s 300000 swap /mfs
