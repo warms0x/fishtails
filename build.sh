@@ -25,8 +25,8 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
+#
+#
 # USAGE INFORMATION
 # Call this script with 'cat build.sh | ksh'. Do NOT invoke build.sh
 # directly as this will overwrite your entire / file system! Also
@@ -160,20 +160,20 @@ will be launched. You may use the 'sudo' command for priviliged commands.
 
 EOF
 
-# Trim motd.
+# Trim message of the day.
 head -2 /etc/motd > /tmp/motd
 mv /tmp/motd /etc/motd
 
-# Restore Script
+# System restore script.
 cat >/etc/rcrestore <<EOF
 #!/bin/sh
-
+#
 # Copyright (c) 2008 Rene Maroufi
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
 # copyright notice and this permission notice appear in all copies.
-
+#
 # THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
 # REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
 # AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
@@ -181,8 +181,8 @@ cat >/etc/rcrestore <<EOF
 # LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 # OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
-
-# This is a resore script for data in /etc, /var and /root inside the BSDanywhere CD
+#
+# This script restores /etc, /var and /root during BSDanywhere's system boot.
 
 sub_restore() {
    if [ -r /mnt/sys.cio ]
@@ -235,20 +235,20 @@ exit \$STATUS
 
 EOF
 
-# make restore script executable
+# Make restore script executable.
 chmod 555 /etc/rcrestore
 
-# Backup Script for system directorys
+# Backup script for system directories.
 SYNCSYS=/usr/local/sbin/syncsys
 cat >$SYNCSYS <<EOF
 #!/bin/sh
-
+#
 # Copyright (c) 2008 Rene Maroufi
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
 # copyright notice and this permission notice appear in all copies.
-
+#
 # THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
 # REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
 # AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
@@ -256,8 +256,8 @@ cat >$SYNCSYS <<EOF
 # LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 # OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
-
-# This script make backups of changed files in /etc, /var and /root
+#
+# This script creates a backup of modified files in /etc, /var and /root.
 
 sub_backup() {
    find /etc /var /root -newer /etc/timemark | cpio -o > /mnt/sys.cio
@@ -300,21 +300,21 @@ fi
 
 EOF
 
-# make syncsys script executable
+# Make syncsys script executable.
 chmod 555 $SYNCSYS
 
-# Backup script for an USB drive
+# Backup script for a USB drive.
 mkdir /home/live/bin
 MKBACKUP=/home/live/bin/mkbackup
 cat >$MKBACKUP <<EOF
 #!/bin/sh
-
+#
 # Copyright (c) 2008 Rene Maroufi
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
 # copyright notice and this permission notice appear in all copies.
-
+#
 # THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
 # REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
 # AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
@@ -322,10 +322,10 @@ cat >$MKBACKUP <<EOF
 # LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 # OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
-
+#
 # This script will backup or restore live's home data on a USB stick.
 
-# function for backup
+# Function for backup.
 sub_backup() {
     if [ -w /mnt ]
     then
