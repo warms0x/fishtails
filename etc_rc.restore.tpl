@@ -20,7 +20,9 @@ sub_restore() {
    if [ -r /mnt/sys.cio ]
    then
       cd /
+      echo 'Restoring data ... '
       cpio -i < /mnt/sys.cio
+      echo done
    else
       echo "Can't find sys.cio!" >&2
       STATUS=2
@@ -32,14 +34,17 @@ STATUS=0
 usbdevs -d | grep umass >/dev/null
 if [ $? -eq 0 ]
 then
-   echo "Do you want to restore system data?"
-   echo -n "If yes enter drive without /dev/ and partition  (e. g. 'sd0') or enter no: "
+   echo "A USB device has been found. To restore previously saved system data"
+   echo -n "specify a drive without /dev and partition (e.g. 'sd0') or 'no': "
+
    read usbs
    if [ "$usbs" = "n" ] || [ "$usbs" = "no" ] || [ "$usbs" = "No" ] || [ "$usbs" = "NO" ] || [ "$usbs" = "N" ]
    then
       exit 0
    fi
+
    SFLAG=0
+
    disklabel "${usbs}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
    if [ $? -eq 0 ]
    then
@@ -48,6 +53,7 @@ then
       sub_restore
       umount /mnt
    fi
+
    disklabel "${usbs}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
    if [ $? -eq 0 ]
    then
@@ -56,6 +62,7 @@ then
       sub_restore
       umount /mnt
    fi
+
    if [ $SFLAG -eq 0 ]
    then
       echo "Can't find partition!" >&2
