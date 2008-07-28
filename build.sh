@@ -195,28 +195,28 @@ install -o root -g wheel -m 644 $CWD/etc_welcome.tpl $IMAGE_ROOT/etc/welcome
 install -o root -g wheel -m 755 $CWD/etc_rc.restore.tpl $IMAGE_ROOT/etc/rc.restore
 install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/local/sbin/syncsys
 
-#
-# Enter change-root and customize system within.
-#
-chroot $IMAGE_ROOT
-ldconfig
-echo "%wheel        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
+    #
+    # Enter change-root and customize system within.
+    #
+    chroot $IMAGE_ROOT
+    ldconfig
+    echo "%wheel        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
 
-# Create 'live' account with an empty password.
-useradd -G wheel,operator,dialer -c "BSDanywhere Live CD Account" -d /home/live -k /etc/skel -s /bin/ksh -m live
-perl -p -i -e 's/\Qlive:*************:1000\E/live::1000/g' /etc/master.passwd
-pwd_mkdb /etc/master.passwd
+    # Create 'live' account with an empty password.
+    useradd -G wheel,operator,dialer -c "BSDanywhere Live CD Account" -d /home/live -k /etc/skel -s /bin/ksh -m live
+    perl -p -i -e 's/\Qlive:*************:1000\E/live::1000/g' /etc/master.passwd
+    pwd_mkdb /etc/master.passwd
 
-# Download and install packages.
-echo
-pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping clamav e-20071211p3 audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 sleuthkit smartmontools rsnapshot surfraw darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep
+    # Download and install packages.
+    echo
+    pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping clamav e-20071211p3 audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 sleuthkit smartmontools rsnapshot surfraw darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep
+    
+    # Download torbutton extension and place it in live's home account for manual installation.
+    # Users can drag this file into firefox to install it. Automatic install seems to be broken.
+    ftp -o /home/live/torbutton.xpi http://torbutton.torproject.org/dev/releases/torbutton-1.2.0rc1.xpi
 
-# Download torbutton extension and place it in live's home account for manual installation.
-# Users can drag this file into firefox to install it. Automatic install seems to be broken.
-ftp -o /home/live/torbutton.xpi http://torbutton.torproject.org/dev/releases/torbutton-1.2.0rc1.xpi
-
-# Leave the chroot environment.
-exit
+    # Leave the chroot environment.
+    exit
 
 # Install those template files that need prerequisites.
 install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/bin/
