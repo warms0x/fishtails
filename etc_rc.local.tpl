@@ -21,7 +21,11 @@ echo '.'
 # BSDanywhere should always run on low memory systems. However, if
 # we find enough memory, we can offer some performance improvements.
 sub_mfsmount() {
-    if [ $(sysctl -n hw.physmem) -gt 530000000 ]
+
+    # convert into mb due to ksh's 32 bit limit
+    physmem=$(echo $(sysctl -n hw.physmem) / 1048576 | bc )
+
+    if [ $physmem -gt 510 ]
     then
         echo -n "Do you want to preload free memory to speed up BSDanywhere? (N/y) "
         read doit
