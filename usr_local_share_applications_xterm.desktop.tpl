@@ -5,3 +5,4 @@ Type=Application
 Exec=xterm
 Icon=xterm.png
 Terminal=false
+Categories=Console

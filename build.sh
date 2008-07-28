@@ -219,6 +219,7 @@ ftp -o /home/live/torbutton.xpi http://torbutton.torproject.org/dev/releases/tor
 exit
 
 # Install those template files that need prerequisites.
+install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/bin/
 install -o 1000 -g 10 -m 555 $CWD/home_live_bin_mkbackup.tpl $IMAGE_ROOT/home/live/bin/mkbackup
 install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.profile.tpl $IMAGE_ROOT/home/live/.profile
 install -o 1000 -g 10 -m 644 $CWD/home_live_.kshrc.tpl $IMAGE_ROOT/home/live/.kshrc
@@ -227,13 +228,17 @@ install -o root -g wheel -m 644 $CWD/usr_local_share_applications_xterm.desktop.
 install -b -B .orig -o root -g wheel -m 644 $CWD/etc_privoxy_config.tpl $IMAGE_ROOT/etc/privoxy/config
 
 # E17 specific installs.
+install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/
+install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/menus/
+install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/
+install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/
+install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/
 install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/menu/
+install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/bar/
 install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/bar/default/
 install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_menu_favorite.menu.tpl $IMAGE_ROOT/home/live/.e/e/applications/menu/favorite.menu
 install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_bar_default_.order.tpl $IMAGE_ROOT/home/live/.e/e/applications/bar/default/.order
-
-# Make sure all files in ~live are owned by live.
-chown -R 1000:10 $IMAGE_ROOT/home/live
+install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.config_menus_applications.menu.tpl $IMAGE_ROOT/home/live/.config/menus/applications.menu
 
 # Prepare to-be-mfs file systems by packaging their directories into
 # individual tgz's. They will be untar'ed on each boot by /etc/rc.

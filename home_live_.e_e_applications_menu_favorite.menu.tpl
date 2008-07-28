@@ -6,8 +6,6 @@
   <Include>
     <Filename>xterm.desktop</Filename>
     <Filename>firefox.desktop</Filename>
-    <Filename>audacious.desktop</Filename>
-    <Filename>gqview.desktop</Filename>
     <Filename>gimp.desktop</Filename>
     <Filename>abiword.desktop</Filename>
     <Filename>thunderbird.desktop</Filename>
