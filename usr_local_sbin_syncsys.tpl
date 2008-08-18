@@ -17,7 +17,7 @@
 # This script creates a backup of modified files in /etc, /var and /root.
 
 sub_backup() {
-   find /etc /var /root -newer /etc/timemark | cpio -o > /mnt/sys.cio
+   find /etc /var /root -newer /etc/timemark ! -type s ! -type p | cpio -o > /mnt/sys.cio
 }
 
 mount | grep mnt
