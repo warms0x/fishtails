@@ -226,13 +226,9 @@ done
 echo .
 
 # BSDanywhere specific device node creation.
-# MAKEDEV needs to be executed twice due to a bug/feature
-# on /dev/null creation. Only 'std' will create it properly.
 echo -n 'Creating device nodes ... '
     cp /stand/MAKEDEV /dev/
-    cd /dev
-    ./MAKEDEV all 2> /dev/null
-    ./MAKEDEV std
+    cd /dev && ./MAKEDEV all
 echo done
 
 # BSDanywhere specific restore script

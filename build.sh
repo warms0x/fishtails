@@ -264,7 +264,7 @@ find $IMAGE_ROOT/bin \
      $IMAGE_ROOT/usr/local/bin \
      $IMAGE_ROOT/usr/local/sbin \
      $IMAGE_ROOT/usr/X11R6/bin \
-     ! -perm -4000 ! -name stty ! -name cp \
+     ! -perm -4000 ! -name stty ! -name cp ! -name mkdir \
      ! -name chmod ! -name chgrp ! -name chown \
      ! -name tar ! -name pax ! -name cpio \
      ! -name sh ! -name ksh ! -name rksh \
