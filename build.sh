@@ -51,6 +51,7 @@ export CWD=$(pwd)
 export THIS_OS=$(uname)
 export THIS_ARCH=$(uname -m)
 export THIS_RELEASE=$(uname -r)
+export MIN_SPACE_REQ='1600000'
 
 #
 # Functions go first.
@@ -106,8 +107,8 @@ examine_environment() {
         fi
 
         echo -n "Mount options of $BASE: "
-        FS=$(df -P $BASE | grep ^/dev | awk '{print $1}')
-        OPTIONS=$(mount | grep $FS | \
+        BASE_FS=$(df -P $BASE | grep ^/dev | awk '{print $1}')
+        OPTIONS=$(mount | grep $BASE_FS | \
                   awk 'match($0,/\(.*\)/){print substr($0,RSTART+1,RLENGTH-2)}' |\
                   tr -d ',')
 
@@ -123,6 +124,15 @@ examine_environment() {
             fi
         done
         echo "$OPTIONS (ok)"
+
+        echo -n "Free space in $BASE: "
+        AVAIL=$(df -k | grep $BASE_FS | awk '{print $4}')
+        if [ "$AVAIL" -ge "$MIN_SPACE_REQ" ]
+        then
+             echo "$AVAIL kb (ok)"
+        else
+             echo "$AVAIL kb (NOT ok)"
+        fi
 
         echo -n "$BASE "
         touch "$BASE/test" 
