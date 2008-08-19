@@ -105,6 +105,25 @@ examine_environment() {
             return 1
         fi
 
+        echo -n "Mount options of $BASE: "
+        FS=$(df -P $BASE | grep ^/dev | awk '{print $1}')
+        OPTIONS=$(mount | grep $FS | \
+                  awk 'match($0,/\(.*\)/){print substr($0,RSTART+1,RLENGTH-2)}' |\
+                  tr -d ',')
+
+        for option in $OPTIONS
+        do
+            if [ "$option" = 'nodev' ] ||\
+               [ "$option" = 'nosuid' ] ||\
+               [ "$option" = 'noexec' ] ||\
+               [ "$option" = 'noatime' ]
+            then
+               echo "$OPTIONS (NOT ok)"
+               return 1
+            fi
+        done
+        echo "$OPTIONS (ok)"
+
         echo -n "$BASE "
         touch "$BASE/test" 
         if [ $? = '0'  ]; then 
