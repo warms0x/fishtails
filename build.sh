@@ -209,12 +209,8 @@ install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/
 
     # Download and install packages.
     echo
-    pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping clamav e-20071211p3 audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 sleuthkit smartmontools rsnapshot surfraw darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep
+    pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping e-20071211p3 audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 smartmontools rsnapshot darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep
     
-    # Download torbutton extension and place it in live's home account for manual installation.
-    # Users can drag this file into firefox to install it. Automatic install seems to be broken.
-    ftp -o /home/live/torbutton.xpi http://torbutton.torproject.org/dev/releases/torbutton-1.2.0rc1.xpi
-
     # Leave the chroot environment.
     exit
 
@@ -240,6 +236,30 @@ install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_menu_f
 install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_bar_default_.order.tpl $IMAGE_ROOT/home/live/.e/e/applications/bar/default/.order
 install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.config_menus_applications.menu.tpl $IMAGE_ROOT/home/live/.config/menus/applications.menu
 
+# Using gzexe we can compress binaries to speed up
+# cdrom reads by saving space at the same time!
+echo 'Compressing binary executables ... '
+find $IMAGE_ROOT/bin \
+     $IMAGE_ROOT/usr/bin \
+     $IMAGE_ROOT/usr/sbin \
+     $IMAGE_ROOT/usr/local/bin \
+     $IMAGE_ROOT/usr/local/sbin \
+     $IMAGE_ROOT/usr/X11R6/bin \
+     ! -perm -4000 ! -name stty ! -name cp \
+     ! -name chmod ! -name chgrp ! -name chown \
+     ! -name tar ! -name pax ! -name cpio \
+     ! -name sh ! -name ksh ! -name rksh \
+     -type f -size +200 -exec gzexe {} \;
+
+echo -n 'Removing gzexe ~ copies ... '
+find $IMAGE_ROOT/bin \
+     $IMAGE_ROOT/usr/bin \
+     $IMAGE_ROOT/usr/sbin \
+     $IMAGE_ROOT/usr/local/bin \
+     $IMAGE_ROOT/usr/local/sbin \
+     $IMAGE_ROOT/usr/X11R6/bin -type f -name "*~" -exec rm {} \;
+echo 'done'
+
 # Prepare to-be-mfs file systems by packaging their directories into
 # individual tgz's. They will be untar'ed on each boot by /etc/rc.
 # This will greatly reduce boot time compared to using -P in newfs.
@@ -252,6 +272,7 @@ done
 
 # Cleanup build environment.
 rm $IMAGE_ROOT/etc/resolv.conf
+rm /tmp/gzexe*
 
 # To save space on the image, we clean out what is not needed to boot.
 rm -r $IMAGE_ROOT/var/* && ln -s /var/tmp $IMAGE_ROOT/tmp
