@@ -59,9 +59,5 @@ liverestore() {
 liverestore
 
 # startx only for local logins
-env | grep SSH_CLIENT >/dev/null
-if [ $? -eq 1 ]
-then
-   startx
-fi
+[ "$SSH_CLIENT" ] || startx
 
