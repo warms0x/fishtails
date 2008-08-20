@@ -125,8 +125,8 @@ sub_networks() {
           if [ -z "$if" ] || [ "$if" = "y" ] || [ "$if" = "Y" ] || [ "$if" = "yes" ] || [ "$if" = "Yes" ]
           then
               sudo ifconfig "$nic" up
-              sudo dhclient -q "$nic" &
-              sudo rtsol "$nic" &
+              sudo dhclient "$nic"
+              sudo rtsol "$nic"
           fi
       done
 
