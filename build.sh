@@ -125,29 +125,31 @@ examine_environment() {
         done
         echo "$OPTIONS (ok)"
 
-        echo -n "Free space in $BASE: "
-        AVAIL=$(df -k | grep $BASE_FS | awk '{print $4}')
-        if [ "$AVAIL" -ge "$MIN_SPACE_REQ" ]
-        then
-             echo "$AVAIL kb (ok)"
-        else
-             echo "$AVAIL kb (NOT ok)"
-        fi
-
         echo -n "$BASE "
-        touch "$BASE/test" 
-        if [ $? = '0'  ]; then 
+        touch "$BASE/test"
+        if [ $? = '0'  ]; then
             echo 'is writeable (ok)'
             rm $BASE/test
         else
             echo "isn't writable (NOT ok)"
             return 1
         fi
+
+        echo -n "Free space in $BASE: "
+        test -d $IMAGE_ROOT && rm -rf $IMAGE_ROOT
+        test -f $BASE/bsdanywhere$R-$ARCH.iso && rm -f $BASE/bsdanywhere$R-$ARCH.iso
+        AVAIL=$(df -k | grep $BASE_FS | awk '{print $4}')
+        if [ "$AVAIL" -ge "$MIN_SPACE_REQ" ]
+        then
+             echo "$AVAIL kb (ok)"
+        else
+             echo "$AVAIL kb (NOT ok)"
+             return 1
+        fi
 }
 
 prepare_build() {
     echo -n 'Preparing build environment ... '
-    test -d $IMAGE_ROOT && rm -rf $IMAGE_ROOT
     mkdir -p $IMAGE_ROOT
     mkdir -p $CACHE_ROOT
     echo done
