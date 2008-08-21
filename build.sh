@@ -45,7 +45,7 @@ export IMAGE_ROOT=$BASE/image
 export CACHE_ROOT=$BASE/cache
 
 export MASTER_SITES=http://mirror.startek.ch
-export PKG_PATH=http://mirror.switch.ch/ftp/pub/OpenBSD/$RELEASE/packages/$ARCH/:$MASTER_SITES/OpenBSD/pkg/$ARCH/e17/
+export PKG_PATH=http://mirror.switch.ch/ftp/pub/OpenBSD/$RELEASE/packages/$ARCH/:$MASTER_SITES/OpenBSD/pkg/$ARCH/
 
 export CWD=$(pwd)
 export THIS_OS=$(uname)
