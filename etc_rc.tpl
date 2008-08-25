@@ -209,8 +209,8 @@ fi
 trap "echo 'Boot interrupted.'; exit 1" 3
 
 umount -a >/dev/null 2>&1
-mount -a -t nonfs,vnd
-mount -uw /		# root on nfs requires this, others aren't hurt
+mount -a -t nonfs,vnd >/dev/null 2>&1
+mount -uw / >/dev/null 2>&1	# root on nfs requires this, others aren't hurt
 # XXX (root now writeable)
 
 # BSDanywhere specific: Set timemark for syncsys.
@@ -451,9 +451,9 @@ swapctl -A -t noblk
 
 # /var/crash should be a directory or a symbolic link
 # to the crash directory if core dumps are to be saved.
-if [ -d /var/crash ]; then
-	savecore ${savecore_flags} /var/crash
-fi
+#if [ -d /var/crash ]; then
+#	savecore ${savecore_flags} /var/crash
+#fi
 
 if [ X"${afs}" = X"YES" -a -c /dev/xfs0 ]; then
 	echo -n 'mounting afs:'
