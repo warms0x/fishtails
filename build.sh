@@ -141,10 +141,10 @@ examine_environment() {
         AVAIL=$(df -k | grep $BASE_FS | awk '{print $4}')
         if [ "$AVAIL" -ge "$MIN_SPACE_REQ" ]
         then
-             echo "$AVAIL kb (ok)"
+            echo "$AVAIL kb (ok)"
         else
-             echo "$AVAIL kb (NOT ok)"
-             return 1
+            echo "$AVAIL kb (NOT ok)"
+            return 1
         fi
 }
 
