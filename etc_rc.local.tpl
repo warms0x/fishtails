@@ -94,6 +94,7 @@ sub_kblayout() {
 
           # set console mapping
           /sbin/kbd "$kbd"
+          echo "$kbd" > /etc/kbdtype
 
           # write X11 mapping into site wide config
           if [ "$kbd" = 'sg' ]; then
@@ -124,9 +125,11 @@ sub_networks() {
           read if
           if [ -z "$if" ] || [ "$if" = "y" ] || [ "$if" = "Y" ] || [ "$if" = "yes" ] || [ "$if" = "Yes" ]
           then
-              sudo ifconfig "$nic" up
-              sudo dhclient "$nic"
-              sudo rtsol "$nic"
+              ifconfig "$nic" up
+              dhclient "$nic"
+              rtsol "$nic"
+              echo "dhcp NONE NONE NONE" > /etc/hostname.$nic
+              echo "rtsol" >> /etc/hostname.$nic
           fi
       done
 
@@ -135,13 +138,17 @@ sub_networks() {
       if [ -z "$ntp" ] || [ "$ntp" = "y" ] || [ "$ntp" = "Y" ] || [ "$ntp" = "yes" ] || [ "$ntp" = "Yes" ]
       then
           sudo ntpd -s &
+          echo "ntpd_flags=" >> /etc/rc.conf.local
       fi
    fi
 }
 
 # Always ask for the keyboard layout first, otherwise subsequent
 # questions may have to be answered on an unset (=us) layout.
-sub_kblayout
-sub_timezone
-sub_networks
+if [ ! -f /tmp/restore ]
+then
+    sub_kblayout
+    sub_timezone
+    sub_networks
+fi
 sub_mfsmount

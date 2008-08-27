@@ -20,8 +20,9 @@ sub_restore() {
    if [ -r /mnt/sys.cio ]
    then
       cd /
-      echo 'Restoring data ... '
+      echo -n 'Restoring data ... '
       cpio -iu < /mnt/sys.cio
+      >/tmp/restore
       echo done
    else
       echo "Can't find sys.cio!" >&2

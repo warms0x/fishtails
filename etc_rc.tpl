@@ -487,13 +487,13 @@ if [ -f /etc/ptmp ]; then
 	'password file may be incorrect -- /etc/ptmp exists'
 fi
 
-echo clearing /tmp
+#echo clearing /tmp
 
 # prune quickly with one rm, then use find to clean up /tmp/[lq]*
 # (not needed with mfs /tmp, but doesn't hurt there...)
-(cd /tmp && rm -rf [a-km-pr-zA-Z]* &&
-    find . ! -name . ! -name lost+found ! -name quota.user \
-	! -name quota.group -execdir rm -rf -- {} \; -type d -prune)
+#(cd /tmp && rm -rf [a-km-pr-zA-Z]* &&
+#    find . ! -name . ! -name lost+found ! -name quota.user \
+#	! -name quota.group -execdir rm -rf -- {} \; -type d -prune)
 
 # create Unix sockets directories for X if needed and make sure they have
 # correct permissions
