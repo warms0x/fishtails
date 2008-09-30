@@ -165,9 +165,9 @@ install_custom_kernels() {
     done
 }
 
-# Get generic boot loaders and ram disk kernel.
+# Get generic boot loaders.
 install_boot_files() {
-    for i in cdbr cdboot bsd.rd
+    for i in cdbr cdboot
     do
         test -r $CACHE_ROOT/$i || \
              ftp -o $CACHE_ROOT/$i $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i
