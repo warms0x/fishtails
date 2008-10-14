@@ -27,7 +27,7 @@ sub_mfsmount() {
 
     if [ $physmem -gt 512 ]
     then
-        echo -n "Do you want to preload free memory to speed up BSDanywhere? (N/y) "
+        echo -n "Preload free memory to speed up BSDanywhere? (N/y) "
         read doit
         if [ "$doit" == "y" ] || [ "$doit" == "Y" ] || [ "$doit" == "yes" ] || [ "$doit" == "Yes" ]
         then
@@ -115,13 +115,13 @@ sub_kblayout() {
 # Find all real network interfaces and offer to run dhclient/rtsol on
 # each. Also offer to synchronize the time using a default ntpd.conf.
 sub_networks() {
-   echo -n "Do you want to auto configure the network? (Y/n) "
+   echo -n "Auto configure the network? (Y/n) "
    read net
    if [ -z "$net" ] || [ "$net" = "y" ] || [ "$net" = "Y" ] || [ "$net" = "yes" ] || [ "$net" = "Yes" ]
    then
       for nic in $(ifconfig | awk -F: '/^[a-z]+[0-9]: flags=/ { print $1 }' | egrep -v "lo|enc|pflog")
       do
-          echo -n "Do you want to configure $nic for dhcp? (Y/n) "
+          echo -n "Configure $nic for dhcp? (Y/n) "
           read if
           if [ -z "$if" ] || [ "$if" = "y" ] || [ "$if" = "Y" ] || [ "$if" = "yes" ] || [ "$if" = "Yes" ]
           then
@@ -133,7 +133,7 @@ sub_networks() {
           fi
       done
 
-      echo -n "Do you want to synchronize the time using ntpd? (Y/n) "
+      echo -n "Synchronize the time using ntpd? (Y/n) "
       read ntp
       if [ -z "$ntp" ] || [ "$ntp" = "y" ] || [ "$ntp" = "Y" ] || [ "$ntp" = "yes" ] || [ "$ntp" = "Yes" ]
       then
