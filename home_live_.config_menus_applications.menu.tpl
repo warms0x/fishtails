@@ -45,6 +45,7 @@
   <Menu>
     <Name>Accessories</Name>
     <Include> <Category>Console</Category> </Include>
+    <Include> <Category>Utility</Category> </Include>
   </Menu>
 
 </Menu>
