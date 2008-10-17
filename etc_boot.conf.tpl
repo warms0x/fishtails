@@ -1,1 +1,1 @@
-boot /bsd.mp
+set image /bsd.mp
