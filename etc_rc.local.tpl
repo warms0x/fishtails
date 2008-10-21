@@ -95,17 +95,6 @@ sub_kblayout() {
           # set console mapping
           /sbin/kbd "$kbd"
           echo "$kbd" > /etc/kbdtype
-
-          # write X11 mapping into site wide config
-          if [ "$kbd" = 'sg' ]; then
-             xkbd=ch
-          elif [ "$kbd" = 'sv' ]; then
-             xkbd=se
-          else
-             xkbd=$(echo "$kbd" | awk -F. {'print $1}') 
-          fi
-
-          echo "/usr/X11R6/bin/setxkbmap $xkbd &" > /etc/X11/.xinitrc
           break
 
        fi
