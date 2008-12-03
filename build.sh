@@ -37,20 +37,19 @@
 #
 export BASE=/specify/base/path
 
-export RELEASE=4.3
-export ARCH=i386
+export ARCH=$(uname -m)
+export RELEASE=$(uname -r)
 export R=$(echo $RELEASE | awk -F. '{print $1$2 }')
 
 export IMAGE_ROOT=$BASE/image
 export CACHE_ROOT=$BASE/cache
 
-export MASTER_SITES=http://mirror.startek.ch
-export PKG_PATH=http://mirror.switch.ch/ftp/pub/OpenBSD/$RELEASE/packages/$ARCH/:$MASTER_SITES/OpenBSD/packages/$RELEASE/$ARCH/
+export MIRROR1=http://mirror.switch.ch/ftp/pub/OpenBSD
+export MIRROR2=http://mirror.startek.ch
+export PKG_PATH=$MIRROR1/$RELEASE/packages/$ARCH/:$MIRROR2/OpenBSD/packages/$RELEASE/$ARCH/
 
 export CWD=$(pwd)
 export THIS_OS=$(uname)
-export THIS_ARCH=$(uname -m)
-export THIS_RELEASE=$(uname -r)
 export MIN_SPACE_REQ='1600000'
 
 #
@@ -79,22 +78,6 @@ examine_environment() {
             echo 'OpenBSD (ok)'
         else
             echo "$THIS_OS (NOT ok)"
-            return 1
-        fi
-
-        echo -n 'This arch: '
-        if [ "$THIS_ARCH" = "$ARCH" ]; then
-            echo "$ARCH (ok)"
-        else
-            echo "$THIS_ARCH (NOT ok)"
-            return 1
-        fi
-
-        echo -n 'This release: '
-        if [ "$THIS_RELEASE" = "$RELEASE" ]; then
-            echo "$RELEASE (ok)"
-        else 
-            echo "$THIS_RELEASE (NOT ok)"
             return 1
         fi
 
@@ -160,8 +143,10 @@ install_custom_kernels() {
     for i in bsd bsd.mp
     do
         test -r $CACHE_ROOT/$i || \
-             ftp -o $CACHE_ROOT/$i $MASTER_SITES/BSDanywhere/$RELEASE/$ARCH/$i
+             ftp -o $CACHE_ROOT/$i $MIRROR2/BSDanywhere/$RELEASE/$ARCH/$i
+        echo -n "Installing $i ... "
         cp -p $CACHE_ROOT/$i $IMAGE_ROOT/
+        echo done
     done
 }
 
@@ -170,8 +155,10 @@ install_boot_files() {
     for i in cdbr cdboot
     do
         test -r $CACHE_ROOT/$i || \
-             ftp -o $CACHE_ROOT/$i $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i
+             ftp -o $CACHE_ROOT/$i $MIRROR1/$RELEASE/$ARCH/$i
+        echo -n "Installing $i ... "
         cp -p $CACHE_ROOT/$i $IMAGE_ROOT/
+        echo done
     done
 }
 
@@ -180,7 +167,7 @@ install_filesets() {
     for i in base game man misc etc xbase xetc xfont xserv xshare
     do
         test -r $CACHE_ROOT/$i$R.tgz || \
-             ftp -o $CACHE_ROOT/$i$R.tgz $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i$R.tgz
+             ftp -o $CACHE_ROOT/$i$R.tgz $MIRROR1/$RELEASE/$ARCH/$i$R.tgz
         echo -n "Installing $i ... "
         tar -C $IMAGE_ROOT -xzphf $CACHE_ROOT/$i$R.tgz
         echo done
@@ -240,7 +227,7 @@ install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/
 
     # Download and install packages.
     echo
-    pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox-2.0.0.14 mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping e-20071211p3 audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 smartmontools rsnapshot darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep galculator mboxgrep nemesis newsfetch queso radiusniff scanssh smtpscan ssldump stress stunnel
+    pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping firefox3 mozilla-thunderbird gqview bzip2 epdfview-0.1.6p5 ipcalc BitchX imapfilter privoxy tor arping e-20071211p3 screen-4.0.3p1 smartmontools aescrypt aiccu amap angst httptunnel udptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep galculator mboxgrep nemesis newsfetch queso radiusniff scanssh smtpscan ssldump stress stunnel dnstop-20080502 dnstracer
     
     # Leave the chroot environment.
     exit

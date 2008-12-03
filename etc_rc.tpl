@@ -1,4 +1,4 @@
-#	$OpenBSD: rc,v 1.312 2008/02/27 20:27:38 djm Exp $
+#	$OpenBSD: rc,v 1.318 2008/07/09 20:23:47 djm Exp $
 
 # System startup script run by init on autoboot
 # or after single-user.
@@ -116,6 +116,34 @@ random_seed()
 	fi
 }
 
+fill_baddynamic()
+{
+	local _service="$1"
+	local _sysctl="net.inet.${_service}.baddynamic"
+	local _name _port _srv _junk _ban
+	local _i=0
+	grep "/${_service}" /etc/services | { 
+		IFS=" 	/"
+		while read _name _port _srv _junk; do
+			[ "x${_srv}" = "x${_service}" ] || continue;
+			if [ "x${_ban}" = "x" ]; then
+				_ban="+${_port}"
+			else
+				_ban="${_ban},+${_port}"
+			fi
+			# Flush before argv gets too long
+			if [ $((++_i)) -gt 128 ]; then
+				sysctl ${_sysctl}=${_ban} >/dev/null
+				_ban=""
+				_i=0
+			fi
+		done; 
+		if [ "x${_ban}" != "x" ]; then
+			sysctl ${_sysctl}=${_ban} >/dev/null
+		fi
+	}
+}
+
 # End subroutines
 
 stty status '^T'
@@ -211,7 +239,7 @@ trap "echo 'Boot interrupted.'; exit 1" 3
 umount -a >/dev/null 2>&1
 mount -a -t nonfs,vnd >/dev/null 2>&1
 mount -uw / >/dev/null 2>&1	# root on nfs requires this, others aren't hurt
-# XXX (root now writeable)
+#rm -f /fastboot		# XXX (root now writeable)
 
 # BSDanywhere specific: Set timemark for syncsys.
 touch /etc/timemark
@@ -273,6 +301,10 @@ if [ X"${pf}" != X"NO" ]; then
 	echo $RULES | pfctl -f -
 	pfctl -e
 fi
+
+# Fill net.inet.(tcp|udp).baddynamic lists from /etc/services
+fill_baddynamic udp
+fill_baddynamic tcp
 
 sysctl_conf
 
@@ -418,6 +450,7 @@ if [ X"${nfs_server}" = X"YES" -a -s /etc/exports -a \
 	echo -n ' nfsd';		nfsd ${nfsd_flags}
 	if [ X"${lockd}" = X"YES" ]; then
 		echo -n ' rpc.lockd';	rpc.lockd
+		echo -n ' rpc.statd';	rpc.statd
 	fi
 fi
 
@@ -436,8 +469,8 @@ if [ X"${timed_flags}" != X"NO" ]; then
 	echo -n ' timed'; timed $timed_flags
 fi
 
-if [ X"${nmeaattach_flags}" != X"NO" -a -n "${nmeaattach_flags}" ]; then
-	echo -n ' nmeaattach';	nmeaattach ${nmeaattach_flags}
+if [ X"${ldattach_flags}" != X"NO" -a -n "${ldattach_flags}" ]; then
+	echo -n ' ldattach'; ldattach ${ldattach_flags}
 fi
 
 if [ X"${ntpd_flags}" != X"NO" ]; then
@@ -552,7 +585,7 @@ if [ -f /sbin/ldconfig ]; then
 fi
 
 if [ -x /usr/libexec/vi.recover ]; then
-	echo 'preserving editor files';	/usr/libexec/vi.recover
+	echo 'preserving editor files.';	/usr/libexec/vi.recover
 fi
 
 if [ ! -f /etc/ssh/ssh_host_dsa_key ]; then
@@ -599,10 +632,6 @@ if [ X"${snmpd_flags}" != X"NO" ]; then
 	echo -n ' snmpd';		/usr/sbin/snmpd $snmpd_flags
 fi
 
-if [ X"${routed_flags}" != X"NO" ]; then
-	echo -n ' routed';		routed $routed_flags
-fi
-
 if [ X"${ripd_flags}" != X"NO" ]; then
 	echo -n ' ripd';		/usr/sbin/ripd $ripd_flags
 fi
@@ -637,10 +666,7 @@ fi
 
 if [ X"${dhcpd_flags}" != X"NO" -a -f /etc/dhcpd.conf ]; then
 	touch /var/db/dhcpd.leases
-	if [ -f /etc/dhcpd.interfaces ]; then
-		dhcpd_ifs=`stripcom /etc/dhcpd.interfaces`
-	fi
-	echo -n ' dhcpd';	/usr/sbin/dhcpd ${dhcpd_flags} ${dhcpd_ifs}
+	echo -n ' dhcpd';	/usr/sbin/dhcpd ${dhcpd_flags}
 fi
 
 if [ X"${dhcrelay_flags}" != X"NO" ]; then

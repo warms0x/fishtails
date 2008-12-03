@@ -6,8 +6,6 @@
   <Include>
     <Filename>xterm.desktop</Filename>
     <Filename>firefox.desktop</Filename>
-    <Filename>gimp.desktop</Filename>
-    <Filename>abiword.desktop</Filename>
     <Filename>thunderbird.desktop</Filename>
   </Include>
 </Menu>

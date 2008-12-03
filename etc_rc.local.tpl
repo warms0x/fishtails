@@ -122,7 +122,7 @@ sub_networks() {
           fi
       done
 
-      echo -n "Synchronize the time using ntpd? (Y/n) "
+      echo -n "Synchronize time with default servers? (Y/n) "
       read ntp
       if [ -z "$ntp" ] || [ "$ntp" = "y" ] || [ "$ntp" = "Y" ] || [ "$ntp" = "yes" ] || [ "$ntp" = "Yes" ]
       then
