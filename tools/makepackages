@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -A packages net/iperf net/nmap net/tightvnc net/rsync sysutils/pftop net/trafshow security/pwgen editors/hexedit net/hping www/mozilla-firefox mail/mozilla-thunderbird graphics/gqview archivers/bzip2 print/epdfview net/ipcalc net/bitchx mail/imapfilter www/privoxy math/galculator net/tor net/arping x11/e17 misc/screen sysutils/smartmontools security/aescrypt net/aiccu security/amap net/angst net/httptunnel net/udptunnel security/hydra net/iodine editors/nano net/nbtscan net/nepim net/netfwd net/netpipe net/ngrep mail/mboxgrep net/nemesis news/newsfetch net/queso security/radiusniff security/scanssh security/smtpscan net/ssldump sysutils/stress security/stunnel net/dnstop net/dnstracer audio/esound
+
+echo ${packages[*]} | tr " " "\n" | while read pkg
+do
+        cd /usr/ports/$pkg
+        make package
+        make clean
+done
