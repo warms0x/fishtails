@@ -1,3 +1,5 @@
+#	$OpenBSD: rc.local,v 1.39 2006/07/28 20:19:46 sturm Exp $
+
 # Site-specific startup actions, daemons, and other things which
 # can be done AFTER your system goes into securemode.  For actions
 # which should be done BEFORE your system has gone into securemode
@@ -5,16 +7,7 @@
 
 echo -n 'starting local daemons:'
 
-#if [ -x /usr/local/bin/tor ]; then
-#     echo -n ' tor';
-#     /usr/local/bin/tor >/dev/null 2>&1
-#fi
-
-#if [ -x /usr/local/sbin/privoxy ]; then
-#     echo -n ' privoxy';
-#     /usr/local/sbin/privoxy --user _privoxy._privoxy \
-#       /etc/privoxy/config >/dev/null 2>&1
-#fi
+# Add your local startup actions here.
 
 echo '.'
 

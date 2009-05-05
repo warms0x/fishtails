@@ -1,4 +1,4 @@
-#	$OpenBSD: rc,v 1.318 2008/07/09 20:23:47 djm Exp $
+#	$OpenBSD: rc,v 1.321 2008/12/11 15:44:00 naddy Exp $
 
 # System startup script run by init on autoboot
 # or after single-user.
@@ -615,7 +615,7 @@ fi
 
 if [ ! -f /etc/isakmpd/private/local.key ]; then
 	echo -n "openssl: generating new isakmpd RSA key... "
-	if /usr/sbin/openssl genrsa -out /etc/isakmpd/private/local.key 1024 \
+	if /usr/sbin/openssl genrsa -out /etc/isakmpd/private/local.key 2048 \
 	    > /dev/null 2>&1; then
 		chmod 600 /etc/isakmpd/private/local.key
 		openssl rsa -out /etc/isakmpd/local.pub \
@@ -696,6 +696,13 @@ if [ X"${hostapd_flags}" != X"NO" ]; then
 	echo -n ' hostapd';		/usr/sbin/hostapd ${hostapd_flags};
 fi
 
+if [ X"${bt}" != X"NO" ]; then
+	echo -n ' btd';			/usr/sbin/btd
+	if [ -f ${bt_rules} ]; then
+		btctl -f ${bt_rules}
+	fi
+fi
+
 if [ X"${rwhod}" = X"YES" ]; then
 	echo -n ' rwhod';		rwhod
 fi
@@ -743,7 +750,7 @@ if [ X"${spamd_flags}" != X"NO" ]; then
 		spamd_flags="${spamd_flags} -b"
 	fi
 	echo -n ' spamd';		eval /usr/libexec/spamd ${spamd_flags}
-	/usr/libexec/spamd-setup
+	/usr/libexec/spamd-setup -D
 	if [ X"${spamd_black}" = X"NO" ]; then
 		echo -n ' spamlogd'
 		/usr/libexec/spamlogd ${spamlogd_flags}
