@@ -1,0 +1,26 @@
+--- sysctl.conf	Mon Oct 19 14:48:40 2009
++++ sysctl.conf	Mon Oct 19 14:49:25 2009
+@@ -12,7 +12,7 @@
+ #net.inet6.ip6.forwarding=1	# 1=Permit forwarding (routing) of IPv6 packets
+ #net.inet6.ip6.mforwarding=1	# 1=Permit forwarding (routing) of IPv6 multicast packets
+ #net.inet6.ip6.multipath=1	# 1=Enable IPv6 multipath routing
+-#net.inet6.ip6.accept_rtadv=1	# 1=Permit IPv6 autoconf (forwarding must be 0)
++net.inet6.ip6.accept_rtadv=1	# 1=Permit IPv6 autoconf (forwarding must be 0)
+ #net.inet.tcp.rfc1323=0		# 0=Disable TCP RFC1323 extensions (for if tcp is slow)
+ #net.inet.tcp.rfc3390=0		# 0=Disable RFC3390 for TCP window increasing
+ #net.inet.esp.enable=0		# 0=Disable the ESP IPsec protocol
+@@ -24,7 +24,7 @@
+ #net.inet.carp.preempt=1	# 1=Enable carp(4) preemption
+ #net.inet.carp.log=1		# 1=Enable logging of carp(4) packets
+ #ddb.panic=0			# 0=Do not drop into ddb on a kernel panic
+-#ddb.console=1			# 1=Permit entry of ddb from the console
++ddb.console=1			# 1=Permit entry of ddb from the console
+ #fs.posix.setuid=0		# 0=Traditional BSD chown() semantics
+ #vm.swapencrypt.enable=0	# 0=Do not encrypt pages that go to swap
+ #vfs.nfs.iothreads=4		# Number of nfsio kernel threads
+@@ -34,3 +34,5 @@
+ #kern.nosuidcoredump=2		# 2=Put suid coredumps in /var/crash
+ #kern.watchdog.period=32	# >0=Enable hardware watchdog(4) timer if available
+ #kern.watchdog.auto=0		# 0=Disable automatic watchdog(4) retriggering
++machdep.allowaperture=2		# See xf86(4)
++machdep.kbdreset=1		# permit console CTRL-ALT-DEL to do a nice halt

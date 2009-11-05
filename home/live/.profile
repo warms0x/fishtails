@@ -22,13 +22,13 @@ liverestore() {
    usbdevs -d | grep umass >/dev/null
    if [ $? -eq 0 ]
    then
-      echo -n "Do you want to restore data from an usbdrive (y/N)? "
+      echo -n "Restore data from a USB drive (y/N)? "
       read restore
       if [ ! -z $restore ]
       then
          if [ "$restore" = "y" ] || [ "$restore" = "yes" ] || [ "$restore" = "Y" ] || [ "$restore" = "YES" ] || [ "$restore" = "Yes" ]
          then
-            echo -n "Which device is your USB drive (without '/dev/', e.g. 'sd0')? "
+            echo -n "Which is your USB drive (e.g. 'sd0')? "
             read usb
             flag=0
             disklabel "${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
@@ -48,7 +48,7 @@ liverestore() {
                   sub_dorestore
                   sudo umount /mnt
                else
-                  echo "Can't find correct partition on device: nothing restored!"
+                  echo "Can't find valid partition on device: no data restored!"
                fi
             fi
          fi
@@ -56,8 +56,5 @@ liverestore() {
    fi
 }
 
-liverestore
-
-# startx only for local logins
-[ "$SSH_CLIENT" ] || startx
-
+# don't run restore or X for tmux and ssh sessions
+([ "$TMUX" ] || [ "$SSH_CLIENT" ]) || (liverestore; startx)

@@ -36,7 +36,8 @@ then
    exit 1
 fi
 
-echo "This script overwrites previously written (old) backup data!"
+echo "This program will backup live's home data on a USB stick."
+echo "Previously written (old) backup data will be overwritten!"
 echo -n "Which device is your USB drive (without '/dev/', e.g. 'sd0')? "
 read usb
 

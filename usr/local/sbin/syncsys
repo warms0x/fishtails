@@ -57,8 +57,9 @@ sub_msdosmount() {
 
 sub_check
 
-echo "This program overwrites previously written backup data!"
-echo -n "Storage device to write the backup data on (e.g. sd1)? "
+echo "This program saves all modified files in /etc, /var and /root for"
+echo "later restore during boot. Previously written backup data will be"
+echo -n "overwritten! Device to write the backup data to (e.g. sd1)? "
 
 read device
 

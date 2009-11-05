@@ -1,0 +1,7 @@
+--- master.passwd	Mon Oct 19 12:13:30 2009
++++ master.passwd	Mon Oct 19 12:14:59 2009
+@@ -44,3 +44,4 @@
+ _smtpd:*:95:95::0:0:SMTP Daemon:/var/empty:/sbin/nologin
+ _rwalld:*:96:96::0:0:rpc.rwalld:/var/empty:/sbin/nologin
+ nobody:*:32767:32767::0:0:Unprivileged user for NFS:/nonexistent:/sbin/nologin
++live::1000:10::0:0:BSDanywhere Live CD Account:/home/live:/bin/ksh

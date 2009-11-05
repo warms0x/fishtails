@@ -129,7 +129,7 @@ prepare_build() {
     echo -n 'Preparing build environment ... '
     mkdir -p $IMAGE_ROOT
     mkdir -p $CACHE_ROOT
-    echo done
+    echo done.
 }
 
 # Get generic kernels and boot loaders.
@@ -143,7 +143,7 @@ install_boot_files() {
 	fi
 	echo -n "Installing $i ... "
 	cp -p $CACHE_ROOT/$i $IMAGE_ROOT/
-	echo done
+	echo done.
     done
 }
 
@@ -159,7 +159,7 @@ install_filesets() {
         fi
         echo -n "Installing $fs ... "
         tar -C $IMAGE_ROOT -xzphf $CACHE_ROOT/$fs
-        echo done
+        echo done.
     done
 }
 
@@ -170,7 +170,7 @@ prepare_filesystem() {
     mkdir $IMAGE_ROOT/mfs
     cd $IMAGE_ROOT/dev && ./MAKEDEV all && cd $IMAGE_ROOT
     cp $IMAGE_ROOT/dev/MAKEDEV $IMAGE_ROOT/stand/
-    echo done
+    echo done.
 }
 
 install_packages() {
@@ -178,52 +178,65 @@ install_packages() {
     pkg_add -x -B $IMAGE_ROOT $(grep -v '#' $CWD/tools/package_list)
 }
 
+configure_packages() {
+    echo -n 'Configure some packages ... '
+    echo done.
+}
+
 install_template_files() {
-    # Install modified OpenBSD template files. Always make a backup copy so
-    # people can understand what the BSDanywhere specific modifications are.
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_fstab.tpl $IMAGE_ROOT/etc/fstab
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_myname.tpl $IMAGE_ROOT/etc/myname
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_motd.tpl $IMAGE_ROOT/etc/motd
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_boot.conf.tpl $IMAGE_ROOT/etc/boot.conf
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_hosts.tpl $IMAGE_ROOT/etc/hosts
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_sysctl.conf.tpl $IMAGE_ROOT/etc/sysctl.conf
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_rc.tpl $IMAGE_ROOT/etc/rc
-    install -b -B .orig -o root -g wheel -m 755 $CWD/etc_rc.local.tpl $IMAGE_ROOT/etc/rc.local 
-    install -b -B .orig -o root -g wheel -m 440 $CWD/etc_sudoers.tpl $IMAGE_ROOT/etc/sudoers
-    install -b -B .orig -o root -g wheel -m 600 $CWD/etc_master.passwd.tpl $IMAGE_ROOT/etc/master.passwd
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_group.tpl $IMAGE_ROOT/etc/group
+    echo -n 'Installing template files and patching originals ... '
+    # Install template files with BSDanywhere-specific changes.
     install -o root -g wheel -m 644 /dev/null $IMAGE_ROOT/fastboot
+    install -o root -g wheel -m 644 $CWD/etc/boot.conf $IMAGE_ROOT/etc/boot.conf
+    install -o root -g wheel -m 644 $CWD/etc/fstab $IMAGE_ROOT/etc/fstab
+    install -o root -g wheel -m 440 $CWD/etc/sudoers $IMAGE_ROOT/etc/sudoers
+    install -o root -g wheel -m 644 $CWD/etc/welcome $IMAGE_ROOT/etc/welcome
+    install -o root -g wheel -m 755 $CWD/etc/rc.restore $IMAGE_ROOT/etc/rc.restore
+    install -o root -g wheel -m 755 $CWD/usr/local/sbin/syncsys $IMAGE_ROOT/usr/local/sbin/syncsys
 
-    # Install BSDanywhere specific template files.
-    install -o root -g wheel -m 644 $CWD/etc_welcome.tpl $IMAGE_ROOT/etc/welcome
-    install -o root -g wheel -m 755 $CWD/etc_rc.restore.tpl $IMAGE_ROOT/etc/rc.restore
-    install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/local/sbin/syncsys
+    # Apply BSDanywhere-specific diffs to OpenBSD originals.
+    patch -s $IMAGE_ROOT/etc/myname $CWD/etc/myname.diff
+    patch -s $IMAGE_ROOT/etc/motd $CWD/etc/motd.diff
+    patch -s $IMAGE_ROOT/etc/sysctl.conf $CWD/etc/sysctl.conf.diff
+    patch -s $IMAGE_ROOT/etc/rc $CWD/etc/rc.diff
+    patch -s $IMAGE_ROOT/etc/rc.local $CWD/etc/rc.local.diff
+    patch -s $IMAGE_ROOT/etc/master.passwd $CWD/etc/master.passwd.diff
+    patch -s $IMAGE_ROOT/etc/group $CWD/etc/group.diff 
 
-    # Install those template files that need prerequisites.
+    # Install template files which need prerequisites.
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/bin/
-    install -o 1000 -g 10 -m 555 $CWD/home_live_bin_mkbackup.tpl $IMAGE_ROOT/home/live/bin/mkbackup
-    install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.profile.tpl $IMAGE_ROOT/home/live/.profile
-    install -o 1000 -g 10 -m 644 $CWD/home_live_.kshrc.tpl $IMAGE_ROOT/home/live/.kshrc
-    install -o 1000 -g 10 -m 644 $CWD/home_live_.xinitrc.tpl $IMAGE_ROOT/home/live/.xinitrc
-    install -o root -g wheel -m 644 $CWD/usr_local_share_applications_xterm.desktop.tpl $IMAGE_ROOT/usr/local/share/applications/xterm.desktop
+    install -o 1000 -g 10 -m 555 $CWD/home/live/bin/mkbackup $IMAGE_ROOT/home/live/bin/mkbackup
+    install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home/live/.profile $IMAGE_ROOT/home/live/.profile
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.kshrc $IMAGE_ROOT/home/live/.kshrc
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.xinitrc $IMAGE_ROOT/home/live/.xinitrc
+    install -d -o root -g wheel -m 755 $IMAGE_ROOT/usr/local/share/applications/
 
-    # E17 specific installs.
-    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/
-    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/menus/
-    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/
-    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/
-    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/
-    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/menu/
-    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/bar/
-    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/bar/default/
-    install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_menu_favorite.menu.tpl $IMAGE_ROOT/home/live/.e/e/applications/menu/favorite.menu
-    install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_bar_default_.order.tpl $IMAGE_ROOT/home/live/.e/e/applications/bar/default/.order
-    install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.config_menus_applications.menu.tpl $IMAGE_ROOT/home/live/.config/menus/applications.menu
+    # Install window manager specific prerequisites.
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.icewm/
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/wallpaper-$ARCH.jpg $IMAGE_ROOT/home/live/.icewm/wallpaper.jpg
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/menu $IMAGE_ROOT/home/live/.icewm/menu
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/toolbar $IMAGE_ROOT/home/live/.icewm/toolbar
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/preferences $IMAGE_ROOT/home/live/.icewm/preferences
+    install -o 1000 -g 10 -m 755 $CWD/home/live/.icewm/shutdown $IMAGE_ROOT/home/live/.icewm/shutdown
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.icewm/themes/
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.icewm/themes/icedesert/
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.icewm/themes/icedesert/taskbar/
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/themes/icedesert/taskbar/start-$ARCH.xpm $IMAGE_ROOT/home/live/.icewm/themes/icedesert/taskbar/start.xpm
+
+    # XFE (file manager)
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.xfe/
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.xfe/xferc $IMAGE_ROOT/home/live/.xfe/xferc
+
+    # mutt (mail)
+    install -o 1000 -g 10 -m 600 $IMAGE_ROOT/var/mail/root $IMAGE_ROOT/var/mail/live
+    install -d -o 1000 -g 10 -m 700 $IMAGE_ROOT/home/live/Mail
+
+    echo done.
 }
 
 generate_pwdb() {
-    # (Re-)Generate password databases.
+    # Regenerate password database.
     pwd_mkdb -d $IMAGE_ROOT/etc/ $IMAGE_ROOT/etc/master.passwd
 }
 
@@ -261,7 +274,7 @@ package_dirlayout() {
     do
         echo -n "Packaging $fs ... "
         tar cphf - $fs | gzip -9 > $IMAGE_ROOT/stand/$fs.tgz
-        echo done
+        echo done.
     done
 }
 
@@ -280,10 +293,10 @@ burn_cdimage() {
 }
 
 clean_buildenv() {
-    echo -n "Cleanup build environment ... "
+    echo -n "Cleaning up build environment ... "
     rm /tmp/gzexe*
     rm -rf $IMAGE_ROOT
-    echo done
+    echo done.
 }
 
 
@@ -299,6 +312,7 @@ install_boot_files
 install_filesets
 prepare_filesystem
 install_packages
+configure_packages
 install_template_files
 generate_pwdb
 compress_binaries

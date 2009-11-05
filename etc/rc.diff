@@ -1,0 +1,73 @@
+--- rc	Mon Oct 19 15:27:34 2009
++++ rc	Mon Oct 19 15:28:54 2009
+@@ -239,9 +239,30 @@
+ 
+ umount -a >/dev/null 2>&1
+ mount -a -t nonfs,vnd
+-mount -uw /		# root on nfs requires this, others aren't hurt
+-rm -f /fastboot		# XXX (root now writeable)
++mount -uw / >/dev/null 2>&1		# root on nfs requires this, others aren't hurt
++#rm -f /fastboot		# XXX (root now writeable)
+ 
++# BSDanywhere specific: Set timemark for syncsys.
++touch /etc/timemark
++
++# BSDanywhere specific population of file systems.
++echo -n "Populating file systems:"
++for i in var etc root home
++do
++    echo -n " $i"
++    tar -C / -zxphf /stand/$i.tgz
++done
++echo .
++
++# BSDanywhere specific device node creation.
++echo -n 'Creating device nodes ... '
++    cp /stand/MAKEDEV /dev/
++    cd /dev && ./MAKEDEV all
++echo done.
++
++# BSDanywhere specific restore script
++/etc/rc.restore
++
+ random_seed
+ 
+ # pick up option configuration
+@@ -467,9 +488,9 @@
+ 
+ # /var/crash should be a directory or a symbolic link
+ # to the crash directory if core dumps are to be saved.
+-if [ -d /var/crash ]; then
+-	savecore ${savecore_flags} /var/crash
+-fi
++#if [ -d /var/crash ]; then
++#	savecore ${savecore_flags} /var/crash
++#fi
+ 
+ if [ X"${afs}" = X"YES" -a -c /dev/nnpfs0 ]; then
+ 	echo -n 'mounting afs:'
+@@ -503,13 +524,13 @@
+ 	'password file may be incorrect -- /etc/ptmp exists'
+ fi
+ 
+-echo clearing /tmp
++#echo clearing /tmp
+ 
+ # prune quickly with one rm, then use find to clean up /tmp/[lq]*
+ # (not needed with mfs /tmp, but doesn't hurt there...)
+-(cd /tmp && rm -rf [a-km-pr-zA-Z]* &&
+-    find . ! -name . ! -name lost+found ! -name quota.user \
+-	! -name quota.group -execdir rm -rf -- {} \; -type d -prune)
++#(cd /tmp && rm -rf [a-km-pr-zA-Z]* &&
++#    find . ! -name . ! -name lost+found ! -name quota.user \
++#	! -name quota.group -execdir rm -rf -- {} \; -type d -prune)
+ 
+ # create Unix sockets directories for X if needed and make sure they have
+ # correct permissions
+@@ -817,4 +838,6 @@
+ 	echo 'starting xdm...';		/usr/X11R6/bin/xdm ${xdm_flags}
+ fi
+ 
++# BSDanywhere specific welcome message.
++cat /etc/welcome
+ exit 0

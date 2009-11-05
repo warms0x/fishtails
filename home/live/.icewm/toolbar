@@ -1,0 +1,3 @@
+prog Terminal xterm_16x16.xpm xterm
+prog "File Manager" /usr/local/share/pixmaps/xfe.png xfe
+prog "File Manager" /usr/local/share/pixmaps/emelfm2/emelfm2_24.png emelfm2
