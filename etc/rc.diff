@@ -1,5 +1,5 @@
---- rc	Mon Oct 19 15:27:34 2009
-+++ rc	Mon Oct 19 15:28:54 2009
+--- /etc/rc	Mon Aug 16 16:46:47 2010
++++ rc	Tue Aug 17 23:10:07 2010
 @@ -239,9 +239,30 @@
  
  umount -a >/dev/null 2>&1
@@ -33,7 +33,7 @@
  random_seed
  
  # pick up option configuration
-@@ -467,9 +488,9 @@
+@@ -494,9 +515,9 @@
  
  # /var/crash should be a directory or a symbolic link
  # to the crash directory if core dumps are to be saved.
@@ -46,7 +46,7 @@
  
  if [ X"${afs}" = X"YES" -a -c /dev/nnpfs0 ]; then
  	echo -n 'mounting afs:'
-@@ -503,13 +524,13 @@
+@@ -530,14 +551,14 @@
  	'password file may be incorrect -- /etc/ptmp exists'
  fi
  
@@ -55,16 +55,18 @@
  
  # prune quickly with one rm, then use find to clean up /tmp/[lq]*
  # (not needed with mfs /tmp, but doesn't hurt there...)
--(cd /tmp && rm -rf [a-km-pr-zA-Z]* &&
+-(cd /tmp && rm -rf [a-km-pr-zA-Z]*)
+-(cd /tmp &&
 -    find . ! -name . ! -name lost+found ! -name quota.user \
 -	! -name quota.group -execdir rm -rf -- {} \; -type d -prune)
-+#(cd /tmp && rm -rf [a-km-pr-zA-Z]* &&
++#(cd /tmp && rm -rf [a-km-pr-zA-Z]*)
++#(cd /tmp &&
 +#    find . ! -name . ! -name lost+found ! -name quota.user \
 +#	! -name quota.group -execdir rm -rf -- {} \; -type d -prune)
  
  # create Unix sockets directories for X if needed and make sure they have
  # correct permissions
-@@ -817,4 +838,6 @@
+@@ -851,4 +872,6 @@
  	echo 'starting xdm...';		/usr/X11R6/bin/xdm ${xdm_flags}
  fi
  

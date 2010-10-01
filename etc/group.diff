@@ -1,5 +1,5 @@
---- group	Mon Oct 19 12:16:05 2009
-+++ group	Mon Oct 19 12:17:01 2009
+--- /etc/group	Tue Aug 17 20:22:09 2010
++++ group	Fri Aug 20 13:03:53 2010
 @@ -1,9 +1,9 @@
 -wheel:*:0:root
 +wheel:*:0:root,live
@@ -12,11 +12,12 @@
  bin:*:7:
  news:*:8:
  wsrc:*:9:
-@@ -61,6 +61,6 @@
- _btd:*:94:
- _smtpd:*:95:
- _rwalld:*:96:
+@@ -66,7 +66,7 @@
+ _sndio:*:99:
+ _ldapd:*:100:
+ _iked:*:101:
 -dialer:*:117:
 +dialer:*:117:live
  nogroup:*:32766:
  nobody:*:32767:
+ _iodine:*:598:
